@@ -47,8 +47,8 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/code-vulnerability-scanner.git
-cd code-vulnerability-scanner
+git clone https://github.com/HeJiguang/codescan.git
+cd codescan
 
 # 创建虚拟环境（推荐）
 python -m venv venv
@@ -65,7 +65,7 @@ python -m codescan config --api-key YOUR_API_KEY
 ### 使用pip安装（未来支持）
 
 ```bash
-pip install code-vulnerability-scanner
+pip install codescan
 ```
 
 ## 环境配置
@@ -115,7 +115,7 @@ python -m codescan file /path/to/your/file.py
 python -m codescan dir /path/to/your/project
 
 # 扫描GitHub仓库
-python -m codescan github https://github.com/username/repo
+python -m codescan github https://github.com/HeJiguang/codescan.git
 
 # 进行Git合并前检查
 python -m codescan git-merge branch_name
@@ -240,7 +240,7 @@ codescan/
 如遇到问题或有改进建议，请通过以下方式反馈：
 
 1. 提交GitHub Issue
-2. 发送邮件至support@codescan.example.com
+2. 发送邮件至sinwtao@outlook.com
 3. 在官方论坛发帖讨论
 
 ## 贡献
