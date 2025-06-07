@@ -12,8 +12,8 @@
 
 1. 克隆项目仓库
    ```bash
-   git clone https://github.com/yourusername/code-vulnerability-scanner.git
-   cd code-vulnerability-scanner
+   git clone https://github.com/HeJiguang/codescan.git
+   cd codescan
    ```
 
 2. 创建虚拟环境
@@ -111,7 +111,7 @@ mypy codescan
 如有任何问题或讨论，可以：
 
 1. 在GitHub Issues中提问
-2. 发送邮件至support@codescan.example.com
+2. 发送邮件至sinwtao@outlook.com
 3. 加入我们的开发者社区讨论
 
 ## 代码审查

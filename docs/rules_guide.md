@@ -193,7 +193,7 @@ python -m codescan file path/to/test_file.py --rule-test
 
 ## 示例规则库
 
-查看我们的[示例规则库](https://github.com/yourusername/code-vulnerability-scanner/tree/main/examples/rules)获取更多示例规则。
+查看我们的[示例规则库](https://github.com/HeJiguang/codescan/tree/main/examples/rules)获取更多示例规则。
 
 ## 社区贡献
 

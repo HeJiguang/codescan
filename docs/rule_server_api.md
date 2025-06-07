@@ -446,7 +446,7 @@ import json
 import os
 
 def sync_rules():
-    client = RuleServerClient("https://rules.example.com/api", "your-api-key")
+    client = RuleServerClient("https://api.github.com/HeJiguang/codescan", "your-api-key")
     
     # 读取上次同步时间
     last_sync_file = os.path.expanduser("~/.codescan/last_sync.json")
@@ -480,9 +480,9 @@ def sync_rules():
 
 如需部署自己的规则服务器，可参考以下步骤：
 
-1. 克隆规则服务器仓库: `git clone https://github.com/example/rule-server.git`
+1. 克隆规则服务器仓库: `git clone https://github.com/HeJiguang/codescan.git`
 2. 安装依赖: `pip install -r requirements.txt`
 3. 配置数据库连接
 4. 启动服务器: `python server.py`
 
-完整的部署文档请参考[规则服务器部署指南](https://github.com/example/rule-server/docs/deployment.md)。 
+完整的部署文档请参考[规则服务器部署指南](https://github.com/HeJiguang/codescan/docs/deployment.md)。 
