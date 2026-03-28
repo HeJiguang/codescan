@@ -37,6 +37,14 @@ from PyQt5.QtChart import (
 
 # 导入自定义样式模块
 from .styles import Theme, AnimatedButton, TechCard, ModernProgressBar, apply_style
+from .gui_presenters import (
+    SEVERITY_LABELS,
+    issue_details_markdown,
+    issue_title,
+    scan_summary_markdown,
+    severity_label,
+    vulnerability_type_counts,
+)
 from .scanner import CodeScanner, ScanResult
 from .models import list_available_models
 from .report import get_report_generator
@@ -1680,31 +1688,7 @@ class MainWindow(QMainWindow):
         # 清除现有系列
         self.type_chart.removeAllSeries()
         
-        # 收集漏洞类型数据
-        # 这里我们基于CWE ID或描述来分类
-        type_counts = {}
-        
-        for issue in result.issues:
-            # 尝试使用CWE ID作为类型
-            if issue.cwe_id:
-                type_name = f"CWE-{issue.cwe_id}"
-            else:
-                # 如果没有CWE ID，使用描述的前15个字符作为类型
-                desc = issue.description.strip()
-                type_name = desc[:15] + "..." if len(desc) > 15 else desc
-            
-            type_counts[type_name] = type_counts.get(type_name, 0) + 1
-        
-        # 限制类型数量，避免图表过于复杂
-        if len(type_counts) > 8:
-            # 保留前7个最常见类型，其余归为"其他"
-            sorted_types = sorted(type_counts.items(), key=lambda x: x[1], reverse=True)
-            top_types = sorted_types[:7]
-            other_count = sum(count for _, count in sorted_types[7:])
-            
-            type_counts = {name: count for name, count in top_types}
-            if other_count > 0:
-                type_counts["其他"] = other_count
+        type_counts = vulnerability_type_counts(result.issues)
         
         # 创建饼图系列
         series = QPieSeries()
@@ -1750,22 +1734,7 @@ class MainWindow(QMainWindow):
         self.tabs.setCurrentIndex(1)
         
         # 更新结果标签内容
-        severity_counts = result.issues_by_severity
-        summary = f"""# 扫描结果摘要
-
-- **扫描路径**: {result.scan_path}
-- **扫描类型**: {result.scan_type}
-- **扫描时间**: {datetime.fromtimestamp(result.timestamp).strftime('%Y-%m-%d %H:%M:%S')}
-- **扫描ID**: {result.scan_id}
-
-## 问题统计
-- **总计**: {result.total_issues}个问题
-- <span class="severity-critical">**严重**</span>: {severity_counts.get('critical', 0)}
-- <span class="severity-high">**高危**</span>: {severity_counts.get('high', 0)}
-- <span class="severity-medium">**中危**</span>: {severity_counts.get('medium', 0)}
-- <span class="severity-low">**低危**</span>: {severity_counts.get('low', 0)}
-- <span class="severity-info">**提示**</span>: {severity_counts.get('info', 0)}
-"""
+        summary = scan_summary_markdown(result)
         # 渲染并显示结果
         self.result_tab.setHtml(self.render_markdown(summary))
         
@@ -1784,18 +1753,9 @@ class MainWindow(QMainWindow):
             'info': QColor(Theme.INFO)
         }
         
-        # 严重度名称映射
-        severity_names = {
-            'critical': '严重',
-            'high': '高危',
-            'medium': '中危',
-            'low': '低危',
-            'info': '提示'
-        }
-        
         for i, issue in enumerate(result.issues):
             # 设置严重度单元格，带有颜色标识
-            severity_item = QTableWidgetItem(severity_names.get(issue.severity, issue.severity))
+            severity_item = QTableWidgetItem(severity_label(issue.severity))
             severity_item.setForeground(severity_colors.get(issue.severity, QColor(Theme.TEXT_PRIMARY)))
             severity_item.setFont(QFont(Theme.FONT_FAMILY, Theme.FONT_SIZE_NORMAL, QFont.Bold))
             self.issues_table.setItem(i, 0, severity_item)
@@ -1822,9 +1782,8 @@ class MainWindow(QMainWindow):
             self.issues_table.setItem(i, 5, cwe_item)
             
             # 为详情生成问题信息
-            issue_title = issue.title or issue.description or "未命名问题"
-            details += f"## 问题 {i+1}: {issue_title}\n\n"
-            details += f"- **严重度**: {severity_names.get(issue.severity, issue.severity)}\n"
+            details += f"## 问题 {i+1}: {issue_title(issue)}\n\n"
+            details += f"- **严重度**: {severity_label(issue.severity)}\n"
             details += f"- **文件**: `{issue.file_path}`\n"
             details += f"- **行号**: {issue.line_number if issue.line_number else 'N/A'}\n"
             details += f"- **置信度**: {issue.confidence}\n"
@@ -2036,35 +1995,7 @@ class MainWindow(QMainWindow):
             
         # 获取点击的漏洞
         issue = self.scan_result.issues[row]
-        
-        # 构建详细信息
-        issue_title = issue.title or issue.description or "未命名问题"
-        details = f"# {issue_title}\n\n"
-        
-        if issue.severity:
-            severity_label = self.get_severity_label(issue.severity)
-            details += f"**严重程度:** {severity_label}\n\n"
-        
-        if issue.location:
-            details += f"**位置:** `{issue.location}`\n\n"
-            
-        if issue.description:
-            details += f"## 问题描述\n{issue.description}\n\n"
-            
-        if issue.cwe_id:
-            details += f"**CWE ID:** [{issue.cwe_id}](https://cwe.mitre.org/data/definitions/{issue.cwe_id.replace('CWE-', '')}.html)\n\n"
-            
-        if issue.owasp_category:
-            details += f"**OWASP 类别:** {issue.owasp_category}\n\n"
-            
-        if issue.vulnerability_type:
-            details += f"**漏洞类型:** {issue.vulnerability_type}\n\n"
-            
-        if issue.code_snippet:
-            details += f"\n## 代码片段\n```\n{issue.code_snippet}\n```\n"
-            
-        if issue.recommendation:
-            details += f"\n## 修复建议\n{issue.recommendation}\n"
+        details = issue_details_markdown(issue)
         
         # 设置详细信息并切换到详情标签页
         self.details_tab.setHtml(self.render_markdown(details))
