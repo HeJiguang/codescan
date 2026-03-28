@@ -34,7 +34,7 @@ class VulnerabilityDB:
         # 检查是否需要自动更新
         from .config import config
         vulndb_config = config.config.get('vulndb', {})
-        if vulndb_config.get('auto_update', False):
+        if vulndb_config.get('auto_update', False) and vulndb_config.get('update_url'):
             if self._should_update():
                 logger.info("自动更新漏洞库")
                 self.update()

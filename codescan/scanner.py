@@ -10,13 +10,14 @@ import re
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List, Any, Set, Optional, Tuple, Generator
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 
+from .ai.schemas import AIFileIssue
+from .ai.service import AIAnalysisService
 from .config import config
-from .models import get_model_handler
 from .utils import get_file_language, count_lines, is_binary_file, extract_file_info
 from .vulndb import VulnerabilityDB
 
@@ -30,12 +31,23 @@ class VulnerabilityIssue:
     """漏洞问题类"""
     severity: str  # 严重程度: 'critical', 'high', 'medium', 'low', 'info'
     file_path: str  # 文件路径
+    title: str = ""  # 问题标题
     line_number: Optional[int] = None  # 行号（如果可以确定）
     code_snippet: Optional[str] = None  # 代码片段
     description: str = ""  # 问题描述
     recommendation: str = ""  # 修复建议
     cwe_id: Optional[str] = None  # CWE ID
+    owasp_category: Optional[str] = None  # OWASP 类别
+    vulnerability_type: Optional[str] = None  # 漏洞类型
     confidence: str = "medium"  # 置信度: 'high', 'medium', 'low'
+
+    @property
+    def location(self) -> str:
+        """Return a human-readable issue location."""
+
+        if self.line_number:
+            return f"{self.file_path}:{self.line_number}"
+        return self.file_path
 
 @dataclass
 class ScanResult:
@@ -44,6 +56,7 @@ class ScanResult:
     scan_path: str  # 扫描路径
     scan_type: str  # 扫描类型: 'file', 'directory', 'github', 'git-merge'
     timestamp: float  # 扫描时间戳
+    scan_model: str = ""  # 使用的模型
     issues: List[VulnerabilityIssue] = field(default_factory=list)  # 发现的问题
     stats: Dict[str, Any] = field(default_factory=dict)  # 统计信息
     project_info: Dict[str, Any] = field(default_factory=dict)  # 项目信息
@@ -68,6 +81,7 @@ class ScanResult:
             "scan_path": self.scan_path,
             "scan_type": self.scan_type,
             "timestamp": self.timestamp,
+            "scan_model": self.scan_model,
             "issues": [vars(issue) for issue in self.issues],
             "stats": self.stats,
             "project_info": self.project_info
@@ -94,13 +108,14 @@ class ScanResult:
 class CodeScanner:
     """代码扫描器类"""
     
-    def __init__(self, model_name: str = 'default'):
+    def __init__(self, model_name: str = 'default', ai_service=None):
         """初始化扫描器
         
         Args:
             model_name: 使用的大模型名称
         """
         self.model_name = model_name
+        self.ai_service = ai_service
         
         # 检查API配置是否存在
         model_config = config.get_model_config(model_name)
@@ -108,18 +123,18 @@ class CodeScanner:
             # 如果没有API密钥，尝试使用默认配置
             logger.warning(f"未找到模型'{model_name}'的API密钥配置，将使用默认配置")
             self.model_name = 'default'
+            model_config = config.get_model_config(self.model_name)
             
-        # 获取模型处理器
-        try:
-            self.model = get_model_handler(self.model_name)
-            logger.info(f"使用模型: {self.model_name}")
-        except Exception as e:
-            logger.error(f"初始化模型处理器时出错: {str(e)}")
-            # 降级到默认模型
-            if self.model_name != 'default':
-                logger.info("尝试使用默认模型")
-                self.model_name = 'default'
-                self.model = get_model_handler('default')
+        if self.ai_service is None:
+            try:
+                self.ai_service = AIAnalysisService(model_config)
+                logger.info(f"使用模型: {self.model_name}")
+            except Exception as e:
+                logger.error(f"初始化AI分析服务时出错: {str(e)}")
+                if self.model_name != 'default':
+                    logger.info("尝试使用默认模型")
+                    self.model_name = 'default'
+                    self.ai_service = AIAnalysisService(config.get_model_config('default'))
         
         self.vulndb = VulnerabilityDB()
         
@@ -129,6 +144,79 @@ class CodeScanner:
         self.excluded_files = set(scan_config.get('excluded_files', []))
         self.max_file_size_mb = scan_config.get('max_file_size_mb', 10)
         self.timeout_seconds = scan_config.get('timeout_seconds', 60)
+
+    @staticmethod
+    def _coerce_to_dict(value: Any) -> Dict[str, Any]:
+        """Convert Pydantic models or plain objects to dictionaries."""
+
+        if isinstance(value, dict):
+            return value
+        if hasattr(value, "model_dump"):
+            return value.model_dump()
+        return {}
+
+    @staticmethod
+    def _map_ai_issue(file_path: str, issue: AIFileIssue) -> VulnerabilityIssue:
+        """Convert an AI schema issue into the scanner domain model."""
+
+        return VulnerabilityIssue(
+            title=issue.title,
+            severity=issue.severity,
+            file_path=file_path,
+            line_number=issue.line_number,
+            code_snippet=issue.code_snippet,
+            description=issue.description,
+            recommendation=issue.recommendation,
+            cwe_id=issue.cwe_id,
+            confidence=issue.confidence,
+        )
+
+    def _build_rule_issues(
+        self, file_path: str, content: str, relevant_patterns: List[Dict[str, Any]]
+    ) -> List[AIFileIssue]:
+        """Create normalized issues from rule matches."""
+
+        issues: List[AIFileIssue] = []
+        lines = content.split("\n")
+
+        for pattern in relevant_patterns:
+            pattern_text = pattern.get("pattern", "")
+            if not pattern_text:
+                continue
+
+            try:
+                pattern_re = re.compile(pattern_text, re.IGNORECASE)
+            except re.error:
+                logger.warning(f"跳过无效规则模式: {pattern_text}")
+                continue
+
+            if not pattern_re.search(content):
+                continue
+
+            line_number = None
+            code_snippet = None
+            for index, line in enumerate(lines):
+                if pattern_re.search(line):
+                    line_number = index + 1
+                    start = max(0, index - 2)
+                    end = min(len(lines), index + 3)
+                    code_snippet = "\n".join(lines[start:end])
+                    break
+
+            issues.append(
+                AIFileIssue(
+                    title=pattern.get("name", "规则命中"),
+                    severity=pattern.get("severity", "medium"),
+                    description=pattern.get("description", "发现潜在漏洞"),
+                    recommendation=pattern.get("recommendation", "请检查此处代码"),
+                    confidence="medium",
+                    line_number=line_number,
+                    code_snippet=code_snippet,
+                    cwe_id=pattern.get("cwe_id"),
+                )
+            )
+
+        return issues
         
     def _should_exclude_path(self, path: str) -> bool:
         """检查路径是否应被排除
@@ -202,140 +290,33 @@ class CodeScanner:
         
         # 获取相关漏洞模式
         relevant_patterns = self.vulndb.get_patterns_for_language(language)
-        
-        # 准备分析提示
-        prompt = f"""
-分析下面的{language}代码，查找安全漏洞、潜在bug和不良实践。
-文件路径：{file_path}
-
-特别注意以下几点：
-1. SQL注入、XSS等常见安全漏洞
-2. 不安全的依赖和API使用
-3. 硬编码的秘钥和凭证
-4. 未处理的错误和异常
-5. 内存/资源泄漏
-6. 逻辑错误
-7. 代码质量问题
-
-```
-{content}
-```
-
-请按以下JSON格式返回结果：
-```json
-[
-  {{
-    "severity": "critical|high|medium|low|info",
-    "description": "问题描述",
-    "line_number": 42,
-    "code_snippet": "有问题的代码片段",
-    "recommendation": "修复建议",
-    "cwe_id": "CWE编号",
-    "confidence": "high|medium|low"
-  }}
-]
-```
-如果没有发现问题，则返回空数组 []。
-"""
+        rule_issues = self._build_rule_issues(file_path, content, relevant_patterns)
         
         try:
-            # 调用大语言模型
             logger.info(f"使用模型 {self.model_name} 分析文件: {file_path}")
-            analysis_result = self.model.analyze_code(prompt)
-            
-            # 提取JSON结果
-            issues = []
-            
-            # 查找JSON部分
-            json_pattern = r"```json\s*([\s\S]*?)\s*```|^\s*\[\s*\{[\s\S]*\}\s*\]\s*$"
-            matches = re.findall(json_pattern, analysis_result)
-            
-            json_str = ""
-            for match in matches:
-                if match.strip():
-                    json_str = match
-                    break
-                    
-            if not json_str:
-                # 尝试直接解析整个结果
-                json_str = analysis_result
-            
-            try:
-                # 清理JSON字符串
-                json_str = json_str.strip()
-                # 如果JSON字符串不是以[开头，可能需要进一步处理
-                if not json_str.startswith("["):
-                    start_idx = json_str.find("[")
-                    end_idx = json_str.rfind("]")
-                    if start_idx != -1 and end_idx != -1:
-                        json_str = json_str[start_idx:end_idx+1]
-                
-                issues_data = json.loads(json_str)
-                
-                # 处理结果
-                for issue_data in issues_data:
-                    issues.append(VulnerabilityIssue(
-                        severity=issue_data.get("severity", "medium"),
-                        file_path=file_path,
-                        line_number=issue_data.get("line_number"),
-                        code_snippet=issue_data.get("code_snippet"),
-                        description=issue_data.get("description", "未提供描述"),
-                        recommendation=issue_data.get("recommendation", ""),
-                        cwe_id=issue_data.get("cwe_id"),
-                        confidence=issue_data.get("confidence", "medium")
-                    ))
-            except json.JSONDecodeError:
-                # 如果JSON解析失败，添加一个说明问题
-                logger.warning(f"无法解析模型返回的JSON: {file_path}")
-                issues.append(VulnerabilityIssue(
-                    severity="info",
-                    file_path=file_path,
-                    description="模型未返回标准JSON格式，无法完成深度分析",
-                    recommendation="请检查API设置并重试",
-                    confidence="low"
-                ))
-                
-            # 根据漏洞库规则添加更多问题
-            for pattern in relevant_patterns:
-                pattern_re = re.compile(pattern.get("pattern", ""), re.IGNORECASE)
-                
-                if pattern_re.search(content):
-                    # 找到匹配项，添加到问题列表
-                    line_number = None
-                    code_snippet = None
-                    
-                    # 尝试定位行号和代码片段
-                    lines = content.split("\n")
-                    for i, line in enumerate(lines):
-                        if pattern_re.search(line):
-                            line_number = i + 1
-                            start = max(0, i - 2)
-                            end = min(len(lines), i + 3)
-                            code_snippet = "\n".join(lines[start:end])
-                            break
-                    
-                    issues.append(VulnerabilityIssue(
-                        severity=pattern.get("severity", "medium"),
-                        file_path=file_path,
-                        line_number=line_number,
-                        code_snippet=code_snippet,
-                        description=pattern.get("description", "发现潜在漏洞"),
-                        recommendation=pattern.get("recommendation", "请检查此处代码"),
-                        confidence="medium"
-                    ))
-                
-            return issues
+            analysis_result = self.ai_service.analyze_file(
+                file_path=file_path,
+                language=language,
+                content=content,
+                rule_issues=rule_issues,
+            )
+            issues = analysis_result.get("issues", [])
+            return [self._map_ai_issue(file_path, issue) for issue in issues]
                 
         except Exception as e:
             logger.error(f"分析文件时出错 {file_path}: {str(e)}")
-            # 添加一个说明问题的Issue
-            return [VulnerabilityIssue(
-                severity="info",
-                file_path=file_path,
-                description=f"API连接错误: {str(e)}",
-                recommendation="请在设置中检查您的API配置，确保API密钥正确且网络连接正常。",
-                confidence="high"
-            )]
+            fallback_issues = [self._map_ai_issue(file_path, issue) for issue in rule_issues]
+            fallback_issues.append(
+                VulnerabilityIssue(
+                    title="AI分析失败",
+                    severity="info",
+                    file_path=file_path,
+                    description=f"AI分析错误: {str(e)}",
+                    recommendation="请检查模型配置、网络连接和AI服务依赖。",
+                    confidence="high",
+                )
+            )
+            return fallback_issues
     
     def scan_file(self, file_path: str) -> ScanResult:
         """扫描单个文件
@@ -355,6 +336,7 @@ class CodeScanner:
                 scan_id=f"file_{int(time.time())}",
                 scan_path=file_path,
                 scan_type="file",
+                scan_model=self.model_name,
                 timestamp=time.time()
             )
             
@@ -384,6 +366,7 @@ class CodeScanner:
                 scan_id=f"file_{int(time.time())}",
                 scan_path=file_path,
                 scan_type="file",
+                scan_model=self.model_name,
                 timestamp=time.time(),
                 issues=issues,
                 stats=stats,
@@ -396,6 +379,7 @@ class CodeScanner:
                 scan_id=f"file_{int(time.time())}_error",
                 scan_path=file_path,
                 scan_type="file",
+                scan_model=self.model_name,
                 timestamp=time.time(),
                 stats={"error": str(e)}
             )
@@ -419,6 +403,7 @@ class CodeScanner:
             scan_id=f"dir_{int(time.time())}",
             scan_path=dir_path,
             scan_type="directory",
+            scan_model=self.model_name,
             timestamp=time.time()
         )
         
@@ -532,6 +517,7 @@ class CodeScanner:
             scan_id=scan_id,
             scan_path=base_path,
             scan_type="git-merge",
+            scan_model=self.model_name,
             timestamp=time.time(),
             issues=issues
         )
@@ -588,130 +574,15 @@ class CodeScanner:
         Returns:
             项目信息字典
         """
-        # 找出主要语言
-        main_language = max(stats.get("languages", {}).items(), 
-                            key=lambda x: x[1], default=("Unknown", 0))[0]
-        
         # 获取目录结构
         structure = self._get_directory_structure(dir_path)
-        
-        # 使用大模型生成项目概述
-        prompt = f"""
-根据以下项目统计信息，分析这个项目的类型、结构和主要功能。
-
-项目路径: {dir_path}
-总文件数: {stats.get("total_files", 0)}
-代码行数: {stats.get("total_lines_of_code", 0)}
-主要语言: {main_language}
-语言分布: {stats.get("languages", {})}
-文件类型分布: {stats.get("file_extensions", {})}
-
-目录结构:
-{json.dumps(structure, ensure_ascii=False, indent=2)}
-
-请提供:
-1. 项目大致类型和功能
-2. 主要组件和模块
-3. 项目架构概述
-4. 可能的使用场景
-
-必须以严格的JSON格式回答，包含以下字段:
-- "project_type": 项目类型
-- "main_functionality": 主要功能
-- "components": 主要组件列表
-- "architecture": 架构简述
-- "use_cases": 可能的使用场景列表
-
-示例格式:
-{{
-  "project_type": "Web应用",
-  "main_functionality": "用户认证和授权管理系统",
-  "components": ["用户管理", "权限控制", "登录模块"],
-  "architecture": "前后端分离架构，使用React前端和Django后端",
-  "use_cases": ["企业内部系统", "SaaS平台"]
-}}
-
-确保返回值是有效的JSON，不包含任何额外文本、代码块标记或解释。
-"""
 
         try:
-            # 调用大语言模型分析
-            analysis_result = self.model.analyze_code(prompt)
-            
-            # 尝试解析JSON结果
-            try:
-                # 先尝试直接解析
-                try:
-                    project_info = json.loads(analysis_result)
-                except json.JSONDecodeError:
-                    # 如果直接解析失败，尝试从文本中提取JSON部分
-                    json_pattern = r'```json\s*([\s\S]*?)\s*```|```\s*([\s\S]*?)\s*```|\{\s*"project_type"[\s\S]*\}'
-                    matches = re.search(json_pattern, analysis_result)
-                    
-                    if matches:
-                        # 使用第一个非空匹配组
-                        for group in matches.groups():
-                            if group:
-                                json_content = group.strip()
-                                project_info = json.loads(json_content)
-                                break
-                    else:
-                        # 如果无法提取JSON，创建一个简单的解析结果
-                        raise json.JSONDecodeError("无法提取有效JSON", analysis_result, 0)
-                
-                # 验证必要的字段
-                required_fields = ["project_type", "main_functionality", "components", "architecture", "use_cases"]
-                for field in required_fields:
-                    if field not in project_info:
-                        project_info[field] = "未提供" if field != "components" and field != "use_cases" else []
-                
-                # 添加统计信息
-                project_info["stats"] = stats
-                return project_info
-                
-            except json.JSONDecodeError as e:
-                logger.error(f"无法解析项目分析结果: {str(e)}")
-                # 创建一个基本的项目信息对象，使用文本分析提取关键信息
-                analysis_text = analysis_result.replace("```json", "").replace("```", "")
-                
-                # 创建一个基本信息对象
-                project_info = {
-                    "project_type": "未能自动分析",
-                    "main_functionality": "未能自动分析",
-                    "components": [],
-                    "architecture": "未能自动分析",
-                    "use_cases": [],
-                    "stats": stats,
-                    "analysis_text": analysis_text  # 保存原始文本以备后用
-                }
-                
-                # 尝试从文本中提取项目类型
-                type_match = re.search(r'项目类型[：:]\s*(.+?)(?:\n|$|\.|，|。)', analysis_text)
-                if type_match:
-                    project_info["project_type"] = type_match.group(1).strip()
-                
-                # 尝试从文本中提取主要功能
-                func_match = re.search(r'主要功能[：:]\s*(.+?)(?:\n\n|$)', analysis_text, re.DOTALL)
-                if func_match:
-                    project_info["main_functionality"] = func_match.group(1).strip()
-                
-                # 提取组件列表
-                components_match = re.search(r'主要组件[：:]\s*(.+?)(?:\n\n|$)', analysis_text, re.DOTALL)
-                if components_match:
-                    components_text = components_match.group(1)
-                    components = re.findall(r'[\-\*•]\s*([^\n]+)', components_text)
-                    if components:
-                        project_info["components"] = [c.strip() for c in components]
-                    else:
-                        project_info["components"] = [s.strip() for s in components_text.split(',') if s.strip()]
-                
-                # 提取架构信息
-                arch_match = re.search(r'架构[：:]\s*(.+?)(?:\n\n|$)', analysis_text, re.DOTALL)
-                if arch_match:
-                    project_info["architecture"] = arch_match.group(1).strip()
-                
-                return project_info
-                
+            project_info = self._coerce_to_dict(
+                self.ai_service.summarize_project(dir_path, stats, structure)
+            )
+            project_info["stats"] = stats
+            return project_info
         except Exception as e:
             logger.error(f"生成项目信息时出错: {str(e)}")
             return {"stats": stats}
@@ -759,106 +630,25 @@ class CodeScanner:
         Returns:
             文件分析信息
         """
-        # 获取文件语言和扩展名
         language = stats.get("language", "Unknown")
-        file_ext = os.path.splitext(file_path)[1].lower()
         file_name = os.path.basename(file_path)
-        
-        # 使用大模型生成文件概述
-        prompt = f"""
-根据以下文件信息，提供简要但全面的文件分析。
-
-文件名: {file_name}
-文件路径: {file_path}
-语言: {language}
-代码行数: {stats.get("lines_of_code", 0)}
-文件大小: {stats.get("file_size_bytes", 0)} 字节
-
-文件内容:
-```
-{content[:3000]}  # 提供文件内容前3000个字符供分析
-```
-{"..." if len(content) > 3000 else ""}
-
-请提供:
-1. 文件的主要功能和用途
-2. 主要的类、函数或组件
-3. 文件在项目中可能的角色
-4. 代码质量和结构评估
-
-必须以严格的JSON格式回答，包含以下字段:
-- "file_purpose": 文件的主要功能和用途
-- "main_components": 主要的类、函数或组件列表
-- "possible_role": 文件在项目中可能的角色
-- "code_quality": 代码质量和结构评估
-- "suggested_improvements": 建议的改进列表
-
-确保返回值是有效的JSON，不包含任何额外文本、代码块标记或解释。
-"""
 
         try:
-            # 调用大语言模型分析
-            analysis_result = self.model.analyze_code(prompt)
-            
-            # 尝试解析JSON结果
-            try:
-                # 先尝试直接解析
-                try:
-                    file_info = json.loads(analysis_result)
-                except json.JSONDecodeError:
-                    # 如果直接解析失败，尝试从文本中提取JSON部分
-                    json_pattern = r'```json\s*([\s\S]*?)\s*```|```\s*([\s\S]*?)\s*```|\{\s*"file_purpose"[\s\S]*\}'
-                    matches = re.search(json_pattern, analysis_result)
-                    
-                    if matches:
-                        # 使用第一个非空匹配组
-                        for group in matches.groups():
-                            if group:
-                                json_content = group.strip()
-                                file_info = json.loads(json_content)
-                                break
-                    else:
-                        # 如果无法提取JSON，创建一个简单的解析结果
-                        raise json.JSONDecodeError("无法提取有效JSON", analysis_result, 0)
-                
-                # 验证必要的字段
-                required_fields = ["file_purpose", "main_components", "possible_role", "code_quality", "suggested_improvements"]
-                for field in required_fields:
-                    if field not in file_info:
-                        if field in ["main_components", "suggested_improvements"]:
-                            file_info[field] = []
-                        else:
-                            file_info[field] = "未分析"
-                
-                # 构建适合项目信息格式的结果
-                result = {
-                    "project_type": f"{language}文件",
-                    "main_functionality": file_info["file_purpose"],
-                    "components": file_info["main_components"],
-                    "architecture": file_info["possible_role"],
-                    "use_cases": [],
-                    "file_analysis": {
-                        "code_quality": file_info["code_quality"],
-                        "suggested_improvements": file_info["suggested_improvements"]
-                    },
-                    "stats": stats
-                }
-                
-                return result
-                
-            except json.JSONDecodeError as e:
-                logger.error(f"无法解析文件分析结果: {str(e)}")
-                # 提取基本信息
-                return {
-                    "project_type": f"{language}文件",
-                    "main_functionality": f"{file_name} - 未能自动分析",
-                    "components": [],
-                    "architecture": "单文件分析",
-                    "use_cases": [],
-                    "stats": stats,
-                    "analysis_text": analysis_result
-                }
-                
+            file_info = self._coerce_to_dict(
+                self.ai_service.summarize_file(file_path, language, stats, content)
+            )
+            return {
+                "project_type": f"{language}文件",
+                "main_functionality": file_info.get("file_purpose", f"{file_name} - 未能自动分析"),
+                "components": file_info.get("main_components", []),
+                "architecture": file_info.get("possible_role", "单文件分析"),
+                "use_cases": [],
+                "file_analysis": {
+                    "code_quality": file_info.get("code_quality", "未分析"),
+                    "suggested_improvements": file_info.get("suggested_improvements", []),
+                },
+                "stats": stats,
+            }
         except Exception as e:
             logger.error(f"生成文件信息时出错: {str(e)}")
             return {

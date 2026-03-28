@@ -1,50 +1,31 @@
-# 代码漏洞风险检查软件文档
+# CodeScan 文档索引
 
-本目录包含了代码漏洞风险检查软件的所有技术文档和用户指南。
+本目录收录 CodeScan 的技术文档、开发文档和规则相关说明。
 
-## 文档索引
+## 建议阅读顺序
 
-### 用户指南
+1. [主 README](../README.md)
+2. [技术文档](technical_doc.md)
+3. [规则编写指南](rules_guide.md)
+4. [贡献指南](CONTRIBUTING.md)
 
-- [主README](../README.md) - 软件概述、功能特点和基本使用方法
-- [规则编写指南](rules_guide.md) - 如何创建和管理自定义漏洞检测规则
+## 文档列表
 
-### 开发者文档
+### 面向使用者
 
-- [技术文档](technical_doc.md) - 详细的系统架构和实现原理
-- [贡献指南](CONTRIBUTING.md) - 如何参与项目开发和贡献代码
-- [行为准则](CODE_OF_CONDUCT.md) - 项目社区行为规范
+- [主 README](../README.md)
+- [规则编写指南](rules_guide.md)
 
-### API文档
+### 面向开发者
 
-- [规则服务器API](rule_server_api.md) - 规则服务器API参考文档
+- [技术文档](technical_doc.md)
+- [贡献指南](CONTRIBUTING.md)
+- [行为准则](CODE_OF_CONDUCT.md)
 
-## 快速入门
+### 其他文档
 
-新用户推荐按以下顺序阅读文档：
+- [规则服务器 API](rule_server_api.md)
 
-1. [主README](../README.md) - 了解软件基本功能和安装方法
-2. [技术文档](technical_doc.md) - 深入了解系统架构和工作原理
-3. [规则编写指南](rules_guide.md) - 学习如何创建自定义规则
+## 说明
 
-## 常见问题
-
-### Q: 如何快速开始使用该软件？
-
-A: 请参考[主README](../README.md)中的安装方法和基本使用示例。
-
-### Q: 如何贡献代码？
-
-A: 请查看[贡献指南](CONTRIBUTING.md)了解详细步骤。
-
-### Q: 如何创建自定义规则？
-
-A: 请参考[规则编写指南](rules_guide.md)学习规则编写方法。
-
-### Q: 软件的架构是什么？
-
-A: [技术文档](technical_doc.md)提供了详细的系统架构介绍。
-
-## 文档更新
-
-本文档最后更新于：2025年6月 
+当前主线已经完成一轮 AI 运行时重构，技术文档与主 README 会优先描述新的 `LangChain + LangGraph + structured output` 架构，而不是旧的字符串拼接式 AI 原型。 

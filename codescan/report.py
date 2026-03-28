@@ -63,6 +63,9 @@ class HTMLReportGenerator(ReportGenerator):
     
     def _generate_content(self, scan_result) -> str:
         """生成HTML格式报告"""
+        def issue_title(issue) -> str:
+            return issue.title or issue.description or "未命名问题"
+
         # 生成HTML报告
         scan_timestamp = datetime.fromtimestamp(scan_result.timestamp)
         formatted_date = scan_timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -717,6 +720,9 @@ class HTMLReportGenerator(ReportGenerator):
             
             # 显示语言统计
             if 'language_stats' in scan_result.project_info or 'languages' in scan_result.stats:
+                lang_stats = scan_result.project_info.get('language_stats', scan_result.stats.get('languages', {}))
+                total_files = sum(lang_stats.values())
+
                 html_content += """
                     <div style="margin-top: 30px;">
                         <h3>语言分布</h3>
@@ -729,21 +735,18 @@ class HTMLReportGenerator(ReportGenerator):
                                         <th>占比</th>
                                     </tr>
                 """
-                
-                lang_stats = scan_result.project_info.get('language_stats', scan_result.stats.get('languages', {}))
-                total_files = sum(lang_stats.values())
-                
+
                 for lang, count in sorted(lang_stats.items(), key=lambda x: x[1], reverse=True):
                     percentage = round((count / total_files) * 100, 1) if total_files > 0 else 0
-                html_content += f"""
+                    html_content += f"""
                                     <tr>
                                         <td>{html.escape(str(lang))}</td>
                                         <td>{count}</td>
                                         <td>{percentage}%</td>
                                     </tr>
                 """
-                
-            html_content += """
+
+                html_content += """
                                 </table>
                     </div>
                             <div style="flex: 1; min-width: 300px;">
@@ -759,14 +762,13 @@ class HTMLReportGenerator(ReportGenerator):
                             // 语言分布图表
                             const langData = {
                 """
-                
-                # 添加语言数据
-            lang_pairs = []
-            for lang, count in lang_stats.items():
-                lang_pairs.append(f"'{lang}': {count}")
-                
+
+                lang_pairs = []
+                for lang, count in lang_stats.items():
+                    lang_pairs.append(f"'{lang}': {count}")
+
                 html_content += ", ".join(lang_pairs)
-                
+
                 html_content += """
                             };
                             
@@ -976,7 +978,7 @@ class HTMLReportGenerator(ReportGenerator):
             
             html_content += f"""
                     <div class="issue {issue.severity}">
-                        <h3>{html.escape(issue.description)}</h3>
+                        <h3>{html.escape(issue_title(issue))}</h3>
                         
                         <div class="issue-meta">
                             <div class="issue-meta-item">
@@ -1049,12 +1051,15 @@ class JSONReportGenerator(ReportGenerator):
     
     def _generate_content(self, scan_result) -> str:
         """生成JSON格式报告"""
+        def issue_title(issue) -> str:
+            return issue.title or issue.description or "未命名问题"
+
         report_data = {
             "timestamp": scan_result.timestamp,
             "formatted_time": datetime.fromtimestamp(scan_result.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
             "scan_type": scan_result.scan_type,
             "scan_path": scan_result.scan_path,
-            "scan_model": scan_result.scan_model,
+            "scan_model": getattr(scan_result, "scan_model", ""),
             "stats": scan_result.stats,
             "project_info": scan_result.project_info,
             "issues": []
@@ -1062,7 +1067,7 @@ class JSONReportGenerator(ReportGenerator):
         
         for issue in scan_result.issues:
             issue_data = {
-                "title": issue.title,
+                "title": issue_title(issue),
                 "description": issue.description,
                 "severity": issue.severity,
                 "confidence": issue.confidence,
@@ -1072,8 +1077,6 @@ class JSONReportGenerator(ReportGenerator):
                 "code_snippet": issue.code_snippet,
                 "recommendation": issue.recommendation,
                 "cwe_id": issue.cwe_id,
-                "owasp_category": issue.owasp_category,
-                "vulnerability_type": issue.vulnerability_type
             }
             report_data["issues"].append(issue_data)
         
@@ -1084,6 +1087,9 @@ class TextReportGenerator(ReportGenerator):
     
     def _generate_content(self, scan_result) -> str:
         """生成文本格式报告"""
+        def issue_title(issue) -> str:
+            return issue.title or issue.description or "未命名问题"
+
         # 扫描信息
         scan_timestamp = datetime.fromtimestamp(scan_result.timestamp)
         formatted_date = scan_timestamp.strftime('%Y-%m-%d %H:%M:%S')
@@ -1096,7 +1102,7 @@ class TextReportGenerator(ReportGenerator):
             f"扫描时间: {formatted_date}",
             f"扫描类型: {'目录扫描' if scan_result.scan_type.lower() == 'directory' else '文件扫描'}",
             f"扫描路径: {scan_result.scan_path}",
-            f"使用模型: {scan_result.scan_model}",
+            f"使用模型: {getattr(scan_result, 'scan_model', '')}",
             "-" * 80
         ]
         
@@ -1224,7 +1230,7 @@ class TextReportGenerator(ReportGenerator):
             )
             
             for i, issue in enumerate(sorted_issues, 1):
-                report.append(f"\n[{i}] {issue.title}")
+                report.append(f"\n[{i}] {issue_title(issue)}")
                 report.append("-" * 80)
                 
                 if issue.severity:
@@ -1233,25 +1239,18 @@ class TextReportGenerator(ReportGenerator):
                 if issue.confidence:
                     report.append(f"置信度: {issue.confidence.capitalize()}")
                     
-                if issue.location:
-                    report.append(f"位置: {issue.location}")
+                report.append(f"位置: {issue.location}")
                     
                 if issue.description:
                     report.append(f"\n问题描述:\n{issue.description}")
-            
-            if issue.cwe_id:
+
+                if issue.cwe_id:
                     report.append(f"\nCWE ID: {issue.cwe_id}")
-                    
-            if issue.owasp_category:
-                    report.append(f"OWASP类别: {issue.owasp_category}")
-                    
-            if issue.vulnerability_type:
-                    report.append(f"漏洞类型: {issue.vulnerability_type}")
-                    
-            if issue.code_snippet:
+
+                if issue.code_snippet:
                     report.append(f"\n代码片段:\n{issue.code_snippet}")
                 
-            if issue.recommendation:
+                if issue.recommendation:
                     report.append(f"\n修复建议:\n{issue.recommendation}")
         else:
             report.append("\n未发现漏洞。")

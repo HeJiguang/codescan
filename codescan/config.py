@@ -49,8 +49,8 @@ DEFAULT_CONFIG = {
         'timeout_seconds': 60
     },
     'vulndb': {
-        'update_url': 'https://example.com/vulndb/latest.json',
-        'auto_update': True,
+        'update_url': '',
+        'auto_update': False,
         'update_interval_days': 7
     },
     'output': {

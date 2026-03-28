@@ -62,7 +62,7 @@ class APISettingsDialog(QDialog):
         layout = QVBoxLayout(self)
         
         # 添加帮助说明文本
-        help_text = QLabel("请配置DeepSeek API以启用代码扫描功能。需要您在DeepSeek官方网站获取API密钥。\n如果连接有问题，可以尝试配置HTTP代理解决网络连接问题。")
+        help_text = QLabel("请配置可用的大模型 API 以启用代码扫描功能。当前支持 DeepSeek、OpenAI、Anthropic 和兼容 OpenAI 协议的自定义服务。\n如果连接有问题，可以尝试配置 HTTP 代理或检查基础 URL。")
         help_text.setWordWrap(True)
         help_text.setStyleSheet("color: #555; font-style: italic; background: #f8f8f8; padding: 8px; border-radius: 4px;")
         layout.addWidget(help_text)
@@ -133,7 +133,7 @@ class APISettingsDialog(QDialog):
         
         # 更新URL
         self.vulndb_url_edit = QLineEdit()
-        self.vulndb_url_edit.setPlaceholderText("https://example.com/vulndb/latest.json")
+        self.vulndb_url_edit.setPlaceholderText("留空表示不启用远程漏洞库更新")
         vulndb_form.addRow("更新URL:", self.vulndb_url_edit)
         
         # 自动更新选项
@@ -1822,7 +1822,8 @@ class MainWindow(QMainWindow):
             self.issues_table.setItem(i, 5, cwe_item)
             
             # 为详情生成问题信息
-            details += f"## 问题 {i+1}: {issue.description}\n\n"
+            issue_title = issue.title or issue.description or "未命名问题"
+            details += f"## 问题 {i+1}: {issue_title}\n\n"
             details += f"- **严重度**: {severity_names.get(issue.severity, issue.severity)}\n"
             details += f"- **文件**: `{issue.file_path}`\n"
             details += f"- **行号**: {issue.line_number if issue.line_number else 'N/A'}\n"
@@ -2037,7 +2038,8 @@ class MainWindow(QMainWindow):
         issue = self.scan_result.issues[row]
         
         # 构建详细信息
-        details = f"# {issue.description}\n\n"
+        issue_title = issue.title or issue.description or "未命名问题"
+        details = f"# {issue_title}\n\n"
         
         if issue.severity:
             severity_label = self.get_severity_label(issue.severity)
