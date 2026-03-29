@@ -1,0 +1,80 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="84" y1="36" x2="1128" y2="384" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1020"/>
+      <stop offset="0.55" stop-color="#101A36"/>
+      <stop offset="1" stop-color="#0E2740"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="230" y1="108" x2="972" y2="310" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60A5FA"/>
+      <stop offset="0.5" stop-color="#22D3EE"/>
+      <stop offset="1" stop-color="#34D399"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#14203C"/>
+      <stop offset="1" stop-color="#18294E"/>
+    </linearGradient>
+    <filter id="glow" x="130" y="52" width="940" height="276" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="20" y="20" width="1160" height="380" rx="28" fill="url(#bg)"/>
+  <rect x="20.5" y="20.5" width="1159" height="379" rx="27.5" stroke="#2B4C7C"/>
+
+  <g opacity="0.22">
+    <path d="M88 76H1112" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M88 124H1112" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M88 172H1112" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M88 220H1112" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M88 268H1112" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M88 316H1112" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M180 52V364" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M332 52V364" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M484 52V364" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M636 52V364" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M788 52V364" stroke="#7DD3FC" stroke-width="1"/>
+    <path d="M940 52V364" stroke="#7DD3FC" stroke-width="1"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <path d="M186 262C282 194 357 166 460 170C567 174 644 236 734 236C825 236 895 173 1014 114" stroke="url(#accent)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="186" cy="262" r="9" fill="#60A5FA"/>
+    <circle cx="460" cy="170" r="9" fill="#38BDF8"/>
+    <circle cx="734" cy="236" r="9" fill="#22D3EE"/>
+    <circle cx="1014" cy="114" r="9" fill="#34D399"/>
+  </g>
+
+  <g>
+    <rect x="86" y="82" width="136" height="42" rx="21" fill="url(#chip)" stroke="#36598A"/>
+    <text x="154" y="108" fill="#A5F3FC" font-family="Segoe UI, Arial, sans-serif" font-size="17" text-anchor="middle">AI Security Scanner</text>
+  </g>
+
+  <g>
+    <text x="84" y="184" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="700">CodeScan</text>
+    <text x="88" y="226" fill="#B9D7FF" font-family="Segoe UI, Arial, sans-serif" font-size="24">LangChain + LangGraph powered code security review</text>
+    <text x="88" y="262" fill="#8FB0D9" font-family="Segoe UI, Arial, sans-serif" font-size="20">Static rules, structured outputs, CLI and GUI reports in one workflow.</text>
+  </g>
+
+  <g>
+    <rect x="86" y="304" width="154" height="40" rx="20" fill="#11213F" stroke="#305485"/>
+    <text x="163" y="329" fill="#C7DDFE" font-family="Consolas, monospace" font-size="16" text-anchor="middle">LangChain</text>
+    <rect x="254" y="304" width="154" height="40" rx="20" fill="#11213F" stroke="#305485"/>
+    <text x="331" y="329" fill="#C7DDFE" font-family="Consolas, monospace" font-size="16" text-anchor="middle">LangGraph</text>
+    <rect x="422" y="304" width="134" height="40" rx="20" fill="#11213F" stroke="#305485"/>
+    <text x="489" y="329" fill="#C7DDFE" font-family="Consolas, monospace" font-size="16" text-anchor="middle">CLI / GUI</text>
+    <rect x="570" y="304" width="142" height="40" rx="20" fill="#11213F" stroke="#305485"/>
+    <text x="641" y="329" fill="#C7DDFE" font-family="Consolas, monospace" font-size="16" text-anchor="middle">HTML / JSON</text>
+  </g>
+
+  <g opacity="0.9">
+    <rect x="870" y="236" width="218" height="92" rx="20" fill="#0E1830" stroke="#2F4F7F"/>
+    <text x="898" y="268" fill="#9CC8FF" font-family="Consolas, monospace" font-size="16">SCAN FLOW</text>
+    <text x="898" y="296" fill="#DCEBFF" font-family="Consolas, monospace" font-size="15">rules  ->  llm  ->  merge</text>
+    <text x="898" y="320" fill="#7EE2FF" font-family="Consolas, monospace" font-size="15">report -> html / json / txt</text>
+  </g>
+</svg>

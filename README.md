@@ -1,69 +1,98 @@
+<p align="center">
+  <img src="docs/assets/readme-hero.svg" alt="CodeScan hero banner" width="100%" />
+</p>
+
+<div align="center">
+
 # CodeScan
 
-![CI](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml/badge.svg)
+面向代码仓库的 AI 安全扫描工具。  
+用规则匹配打底，用大模型补足语义理解，把扫描结果统一输出为可读的报告。
 
-面向代码仓库的 AI 安全扫描工具。它结合规则匹配和大模型分析，对单文件、目录、GitHub 仓库和 Git 合并差异做安全检查，并输出 HTML / JSON / 文本报告。
+[![CI](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml/badge.svg)](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%2B-0F172A?logo=python&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-runtime-0B3B2E?logo=chainlink&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph-workflow-102A43?logo=databricks&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-111827)
 
-## 现在有什么不一样
+</div>
 
-当前主线已经不是最早的“长 prompt + 手工抠 JSON”的原型实现，而是：
+## Quick Links
 
-- `LangChain` 统一模型接入
-- `LangGraph` 编排文件级分析流程
-- 结构化输出约束扫描结果
-- CLI 与 GUI 解耦，命令行帮助不再被 GUI 依赖拖死
-- 扫描结果模型和报告层已经对齐
+- [Why CodeScan](#why-codescan)
+- [Highlights](#highlights)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [CLI Usage](#cli-usage)
+- [Roadmap](#roadmap)
 
-如果你想把它继续打磨成一个更像产品、而不是课程作业的开源项目，这个版本才是可继续演进的起点。
+## Why CodeScan
 
-## 适合什么场景
+很多“AI 扫码器”只是在代码上套一个聊天接口，看起来聪明，但结果不稳定、结构混乱、落不到工程里。
 
-- 在本地快速扫一个可疑文件
-- 在提交前扫一遍目录或仓库
-- 对 GitHub 仓库做一次轻量级安全体检
-- 导入 Semgrep 规则，结合 AI 输出更容易读的解释和建议
+CodeScan 现在这条主线更克制一点：
 
-## 当前架构
+- 先用规则层提供确定性
+- 再用 LLM 做补充分析和解释
+- 用结构化输出约束结果
+- 最后统一进 CLI、GUI 和 HTML / JSON / 文本报告
 
-```text
-GUI / CLI
-   |
-scanner.py
-   |
-codescan/ai/
-├── providers.py   -> 统一模型创建
-├── prompts.py     -> Prompt 构建
-├── chains.py      -> LangChain 结构化输出链
-├── workflow.py    -> LangGraph 工作流
-├── schemas.py     -> Pydantic 结构化结果
-└── service.py     -> 扫描器调用入口
-   |
-vulndb.py / semgrep_converter.py / report.py
+它不是一个无边界的安全 Agent，而是一个更像产品的代码安全扫描器。
+
+## Highlights
+
+| 模块 | 现在能做什么 | 为什么有价值 |
+| --- | --- | --- |
+| `LangChain` 模型层 | 统一接入 DeepSeek / OpenAI / Anthropic / OpenAI-compatible 服务 | 换模型不需要改扫描主流程 |
+| `LangGraph` 工作流 | 把文件分析拆成 `rule_scan -> llm_scan -> merge` | 以后继续加复核、去重、二次评分更顺 |
+| `CLI + GUI` | 命令行和桌面界面都能跑 | 既适合本地工程流，也适合演示 |
+| 报告系统 | HTML / JSON / 文本三种输出 | 可读、可集成、可留档 |
+| 测试与 CI | pytest + GitHub Actions | 至少不是“改完只能靠手感” |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["CLI / GUI"] --> B["CodeScanner"]
+    B --> C["AIAnalysisService"]
+    C --> D["providers.py"]
+    C --> E["chains.py"]
+    C --> F["workflow.py"]
+    B --> G["VulnerabilityDB"]
+    B --> H["report.py"]
+    F --> I["rule_scan"]
+    F --> J["llm_scan"]
+    F --> K["merge_and_finalize"]
 ```
 
-## 支持的模型提供方
+当前核心目录：
 
-- DeepSeek
-- OpenAI
-- Anthropic
-- 兼容 OpenAI API 的自定义服务
+```text
+codescan/
+├── ai/
+│   ├── providers.py
+│   ├── prompts.py
+│   ├── chains.py
+│   ├── workflow.py
+│   ├── schemas.py
+│   └── service.py
+├── scanner.py
+├── report.py
+├── vulndb.py
+├── gui.py
+└── __main__.py
+```
 
-说明：
+## Quick Start
 
-- `DeepSeek` 和多数兼容 OpenAI 的服务都通过 `langchain-openai` 接入
-- `Anthropic` 依赖 `langchain-anthropic`
-- GUI 需要 `PyQt5` 和 `PyQtChart`
-
-## 快速开始
-
-### 1. 克隆仓库
+### 1. Clone
 
 ```bash
 git clone https://github.com/HeJiguang/codescan.git
 cd codescan
 ```
 
-### 2. 创建环境并安装依赖
+### 2. Install
 
 ```bash
 python -m venv .venv
@@ -77,25 +106,29 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. 配置模型
+也可以走标准包方式：
+
+```bash
+pip install -e .
+```
+
+### 3. Configure A Model
 
 ```bash
 # 查看当前配置
 python -m codescan config --show
 
-# 配置 DeepSeek
+# DeepSeek
 python -m codescan config --provider deepseek --api-key YOUR_DEEPSEEK_API_KEY --model deepseek-chat
 
-# 配置 OpenAI
+# OpenAI
 python -m codescan config --provider openai --api-key YOUR_OPENAI_API_KEY --model gpt-4o-mini --base-url https://api.openai.com/v1
 
-# 配置代理
+# 代理
 python -m codescan config --http-proxy http://127.0.0.1:7890
 ```
 
-## 使用方式
-
-### 命令行
+## CLI Usage
 
 ```bash
 # 扫描单文件
@@ -107,28 +140,32 @@ python -m codescan dir /path/to/project
 # 扫描 GitHub 仓库
 python -m codescan github https://github.com/HeJiguang/codescan.git
 
-# 扫描当前仓库与某分支的差异文件
+# 比较当前分支与 main 的差异文件
 python -m codescan git-merge main
 
 # 输出 JSON 报告
 python -m codescan file /path/to/file.py --output result.json
-```
 
-### 图形界面
-
-```bash
+# 打开 GUI
 python -m codescan gui
 ```
 
-## 规则系统
+## What Ships Today
 
-CodeScan 目前支持三层能力：
+- 统一模型接入
+- 文件级 AI 工作流
+- 目录级扫描聚合
+- HTML / JSON / 文本报告
+- GitHub Actions CI
+- `pyproject.toml` 和 console script
+
+## Rule System
+
+CodeScan 目前是三层能力叠加：
 
 1. 内置规则库
 2. Semgrep 规则导入
 3. LLM 深度分析
-
-可以通过下面的命令导入规则：
 
 ```bash
 # 更新漏洞库
@@ -141,31 +178,7 @@ python -m codescan import-rule https://example.com/rules.yaml
 python -m codescan import-github --repo-url https://github.com/returntocorp/semgrep-rules --branch main
 ```
 
-## 输出结果
-
-扫描结果会统一映射到 `ScanResult` / `VulnerabilityIssue`，报告层支持：
-
-- HTML 报告
-- JSON 报告
-- 文本报告
-
-当前报告中会包含：
-
-- 扫描对象与模型信息
-- 严重级别统计
-- 文件位置与代码片段
-- 修复建议
-- 项目概览或文件概览
-
-## 开发状态
-
-这个项目目前已经完成一轮 AI 运行时重构，但还没有到“最终产品形态”。如果继续维护，我认为最值得做的三件事是：
-
-1. 把 GUI 从单文件巨型模块继续拆分
-2. 把规则层从简单正则升级到更可信的 AST / Semgrep 复核流程
-3. 增加真正面向开源用户的 demo、样例报告和 benchmark
-
-## 测试
+## Quality Gate
 
 ```bash
 python -m pytest tests -q
@@ -173,13 +186,23 @@ python -m compileall codescan
 python -m codescan --help
 ```
 
-## 文档
+## Roadmap
+
+- [x] 用 `LangChain + LangGraph` 重构 AI runtime
+- [x] 修正 CLI / GUI / 报告层契约不一致
+- [x] 补上测试、CI、包分发元数据
+- [x] 开始拆 `gui.py` 的纯展示逻辑
+- [ ] 继续拆 GUI 的扫描完成 / 导出 / 设置逻辑
+- [ ] 增加样例报告和 README 截图
+- [ ] 把规则层升级为更可信的 Semgrep / AST 复核流
+
+## Docs
 
 - [技术文档](docs/technical_doc.md)
 - [文档索引](docs/README.md)
 - [规则编写指南](docs/rules_guide.md)
 - [贡献指南](docs/CONTRIBUTING.md)
 
-## 许可证
+## License
 
 MIT，见 [LICENSE](LICENSE)。
