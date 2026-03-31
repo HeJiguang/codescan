@@ -23,8 +23,10 @@ def test_package_help_works_without_gui_import_failure() -> None:
     result = run_codescan("--help")
 
     assert result.returncode == 0, result.stderr
-    assert "代码安全扫描工具" in result.stdout
+    assert "usage:" in result.stdout.lower()
+    assert "config" in result.stdout
     assert "gui" in result.stdout
+    assert "mcp" in result.stdout
 
 
 def test_config_show_command_is_supported() -> None:
@@ -32,3 +34,11 @@ def test_config_show_command_is_supported() -> None:
 
     assert result.returncode == 0, result.stderr
     assert "API" in result.stdout
+
+
+def test_mcp_subcommand_help_is_available() -> None:
+    result = run_codescan("mcp", "--help")
+
+    assert result.returncode == 0, result.stderr
+    assert "--transport" in result.stdout
+    assert "stdio" in result.stdout

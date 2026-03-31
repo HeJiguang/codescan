@@ -32,3 +32,6 @@ jobs:
 
       - name: Smoke test CLI
         run: python -m codescan --help
+
+      - name: Smoke test MCP CLI
+        run: python -m codescan mcp --help

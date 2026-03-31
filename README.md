@@ -6,13 +6,14 @@
 
 # CodeScan
 
-面向代码仓库的 AI 安全扫描工具。  
-用规则匹配打底，用大模型补足语义理解，把扫描结果统一输出为可读的报告。
+AI-assisted code security scanning for repositories, files, and Git diffs.  
+规则层先落地，LLM 层再补语义分析；现在还可以直接作为 MCP server 接进 Codex、Cursor、Claude 等 agent 工作流。
 
 [![CI](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml/badge.svg)](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-0F172A?logo=python&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-runtime-0B3B2E?logo=chainlink&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph-workflow-102A43?logo=databricks&logoColor=white)
+![MCP](https://img.shields.io/badge/MCP-ready-111827)
 ![License](https://img.shields.io/badge/license-MIT-111827)
 
 </div>
@@ -24,36 +25,40 @@
 - [Architecture](#architecture)
 - [Quick Start](#quick-start)
 - [CLI Usage](#cli-usage)
+- [MCP Server](#mcp-server)
+- [Quality Gate](#quality-gate)
 - [Roadmap](#roadmap)
 
 ## Why CodeScan
 
-很多“AI 扫码器”只是在代码上套一个聊天接口，看起来聪明，但结果不稳定、结构混乱、落不到工程里。
+Many “AI code scanners” are just chat wrappers around a code dump. They can sound smart, but the output is unstable, hard to integrate, and difficult to maintain.
 
-CodeScan 现在这条主线更克制一点：
+CodeScan takes a stricter route:
 
-- 先用规则层提供确定性
-- 再用 LLM 做补充分析和解释
-- 用结构化输出约束结果
-- 最后统一进 CLI、GUI 和 HTML / JSON / 文本报告
+- Start with deterministic rule-based signal.
+- Use LLM analysis to deepen context and explanation.
+- Force structured output instead of free-form blob parsing.
+- Deliver the same result model through CLI, GUI, reports, and now MCP tools.
 
-它不是一个无边界的安全 Agent，而是一个更像产品的代码安全扫描器。
+The goal is not to be an unconstrained security agent. The goal is to be a maintainable scanner that agents can also use well.
 
 ## Highlights
 
-| 模块 | 现在能做什么 | 为什么有价值 |
+| Area | What it does now | Why it matters |
 | --- | --- | --- |
-| `LangChain` 模型层 | 统一接入 DeepSeek / OpenAI / Anthropic / OpenAI-compatible 服务 | 换模型不需要改扫描主流程 |
-| `LangGraph` 工作流 | 把文件分析拆成 `rule_scan -> llm_scan -> merge` | 以后继续加复核、去重、二次评分更顺 |
-| `CLI + GUI` | 命令行和桌面界面都能跑 | 既适合本地工程流，也适合演示 |
-| 报告系统 | HTML / JSON / 文本三种输出 | 可读、可集成、可留档 |
-| 测试与 CI | pytest + GitHub Actions | 至少不是“改完只能靠手感” |
+| `LangChain` providers | Unifies DeepSeek, OpenAI, Anthropic, and OpenAI-compatible endpoints | Swap models without rewriting the scanner |
+| `LangGraph` workflow | Models file analysis as `rule_scan -> llm_scan -> merge_and_finalize` | Gives the AI runtime a real pipeline instead of prompt spaghetti |
+| `CLI + GUI` | Supports command-line and desktop use | Useful both for real workflows and demos |
+| `MCP Server` | Exposes structured scan tools for coding agents | Lets Codex and other MCP clients call CodeScan directly |
+| Report system | Generates HTML / JSON / text output | Human-readable and automation-friendly |
+| Tests + CI | Verifies runtime, packaging, and CLI entry points | Keeps the repo from drifting back into prototype quality |
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A["CLI / GUI"] --> B["CodeScanner"]
+    A2["MCP Server"] --> B
     B --> C["AIAnalysisService"]
     C --> D["providers.py"]
     C --> E["chains.py"]
@@ -65,7 +70,7 @@ flowchart LR
     F --> K["merge_and_finalize"]
 ```
 
-当前核心目录：
+Core layout:
 
 ```text
 codescan/
@@ -79,6 +84,7 @@ codescan/
 ├── scanner.py
 ├── report.py
 ├── vulndb.py
+├── mcp_server.py
 ├── gui.py
 └── __main__.py
 ```
@@ -106,7 +112,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-也可以走标准包方式：
+Or install it as a package:
 
 ```bash
 pip install -e .
@@ -115,7 +121,7 @@ pip install -e .
 ### 3. Configure A Model
 
 ```bash
-# 查看当前配置
+# Show current configuration
 python -m codescan config --show
 
 # DeepSeek
@@ -124,57 +130,93 @@ python -m codescan config --provider deepseek --api-key YOUR_DEEPSEEK_API_KEY --
 # OpenAI
 python -m codescan config --provider openai --api-key YOUR_OPENAI_API_KEY --model gpt-4o-mini --base-url https://api.openai.com/v1
 
-# 代理
+# Proxy
 python -m codescan config --http-proxy http://127.0.0.1:7890
 ```
 
 ## CLI Usage
 
 ```bash
-# 扫描单文件
+# Scan one file
 python -m codescan file /path/to/file.py
 
-# 扫描目录
+# Scan a directory
 python -m codescan dir /path/to/project
 
-# 扫描 GitHub 仓库
+# Scan a GitHub repository
 python -m codescan github https://github.com/HeJiguang/codescan.git
 
-# 比较当前分支与 main 的差异文件
+# Review the current branch against main
 python -m codescan git-merge main
 
-# 输出 JSON 报告
+# Write a JSON report
 python -m codescan file /path/to/file.py --output result.json
 
-# 打开 GUI
+# Launch the GUI
 python -m codescan gui
 ```
 
+## MCP Server
+
+CodeScan can now run as an MCP server, which means coding agents can call the scanner directly and receive structured results instead of shelling out to the CLI and parsing report files afterward.
+
+### Start With `stdio`
+
+```bash
+python -m codescan mcp --transport stdio
+```
+
+After `pip install -e .`, you can also use the dedicated script:
+
+```bash
+codescan-mcp --transport stdio
+```
+
+### HTTP Transports
+
+```bash
+codescan-mcp --transport streamable-http --host 127.0.0.1 --port 8000
+codescan-mcp --transport sse --host 127.0.0.1 --port 8000
+```
+
+### Available MCP Tools
+
+- `scan_file(path, model="default")`
+- `scan_directory(path, model="default", max_workers=4)`
+- `scan_git_diff(base_branch, repo_path=".", model="default")`
+- `scan_github_repo(repo_url, model="default", max_workers=4)`
+
+Each tool returns structured scan output with top-level fields such as `issues`, `stats`, `project_info`, `total_issues`, and `issues_by_severity`.
+
+More detail is available in [docs/mcp.md](docs/mcp.md).
+
 ## What Ships Today
 
-- 统一模型接入
-- 文件级 AI 工作流
-- 目录级扫描聚合
-- HTML / JSON / 文本报告
-- GitHub Actions CI
-- `pyproject.toml` 和 console script
+- Unified provider layer for modern chat models
+- LangGraph-based file analysis workflow
+- File, directory, GitHub repo, and Git diff scanning
+- HTML / JSON / text report generation
+- Desktop GUI
+- MCP server with structured security tools
+- `pyproject.toml` packaging and console scripts
+- GitHub Actions CI and test coverage
 
 ## Rule System
 
-CodeScan 目前是三层能力叠加：
+CodeScan currently layers three analysis sources:
 
-1. 内置规则库
-2. Semgrep 规则导入
-3. LLM 深度分析
+1. Built-in vulnerability rules
+2. Imported Semgrep-compatible rule sets
+3. LLM-assisted semantic analysis
 
 ```bash
-# 更新漏洞库
+# Update the vulnerability database
 python -m codescan update
 
-# 从 URL 导入规则
+# Import rules from a URL
 python -m codescan import-rule https://example.com/rules.yaml
 
-# 从 GitHub 导入 Semgrep 规则
+# Import Semgrep rules from GitHub
 python -m codescan import-github --repo-url https://github.com/returntocorp/semgrep-rules --branch main
 ```
 
@@ -184,25 +226,29 @@ python -m codescan import-github --repo-url https://github.com/returntocorp/semg
 python -m pytest tests -q
 python -m compileall codescan
 python -m codescan --help
+python -m codescan mcp --help
 ```
 
 ## Roadmap
 
-- [x] 用 `LangChain + LangGraph` 重构 AI runtime
-- [x] 修正 CLI / GUI / 报告层契约不一致
-- [x] 补上测试、CI、包分发元数据
-- [x] 开始拆 `gui.py` 的纯展示逻辑
-- [ ] 继续拆 GUI 的扫描完成 / 导出 / 设置逻辑
-- [ ] 增加样例报告和 README 截图
-- [ ] 把规则层升级为更可信的 Semgrep / AST 复核流
+- [x] Rebuild the AI runtime with `LangChain + LangGraph`
+- [x] Repair CLI / GUI / report-layer contract mismatches
+- [x] Add packaging metadata, tests, and public CI
+- [x] Extract GUI presentation helpers out of the giant `gui.py`
+- [x] Publish an MCP server surface for coding agents
+- [ ] Continue splitting scan/export/settings logic out of `gui.py`
+- [ ] Add screenshots and example reports to the README
+- [ ] Strengthen rule trustworthiness with deeper Semgrep / AST review flows
+- [ ] Add benchmark repositories and repeatable evaluation fixtures
 
 ## Docs
 
-- [技术文档](docs/technical_doc.md)
-- [文档索引](docs/README.md)
-- [规则编写指南](docs/rules_guide.md)
-- [贡献指南](docs/CONTRIBUTING.md)
+- [Technical Doc](docs/technical_doc.md)
+- [MCP Guide](docs/mcp.md)
+- [Docs Index](docs/README.md)
+- [Rules Guide](docs/rules_guide.md)
+- [Contributing](docs/CONTRIBUTING.md)
 
 ## License
 
-MIT，见 [LICENSE](LICENSE)。
+MIT. See [LICENSE](LICENSE).

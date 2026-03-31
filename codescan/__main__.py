@@ -1,5 +1,7 @@
 """Command-line entry point for CodeScan."""
 
+from __future__ import annotations
+
 import argparse
 import sys
 
@@ -17,79 +19,95 @@ def check_api_config() -> bool:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the package CLI parser."""
+    """Build the top-level package parser."""
 
     parser = argparse.ArgumentParser(
-        description="代码安全扫描工具",
+        description="CodeScan command line interface.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""示例:
-  扫描单个文件:
-    python -m codescan file path/to/file.py
-
-  扫描目录:
-    python -m codescan dir path/to/directory
-
-  扫描GitHub仓库:
-    python -m codescan github https://github.com/user/repo
-
-  启动GUI界面:
-    python -m codescan gui
-        """,
+        epilog=(
+            "Examples:\n"
+            "  python -m codescan file path/to/file.py\n"
+            "  python -m codescan dir path/to/project\n"
+            "  python -m codescan github https://github.com/user/repo\n"
+            "  python -m codescan git-merge main\n"
+            "  python -m codescan mcp --transport stdio\n"
+            "  python -m codescan gui\n"
+        ),
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
-    subparsers = parser.add_subparsers(dest="command", help="命令")
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
-    config_parser = subparsers.add_parser("config", help="配置工具")
-    config_parser.add_argument("--show", action="store_true", help="显示当前配置")
-    config_parser.add_argument("--api-key", help="设置API密钥")
-    config_parser.add_argument("--model", help="设置模型名称")
-    config_parser.add_argument("--base-url", "--api-base", dest="base_url", help="设置API基础URL")
+    config_parser = subparsers.add_parser("config", help="Manage model configuration")
+    config_parser.add_argument("--show", action="store_true", help="Show the current configuration")
+    config_parser.add_argument("--api-key", help="Set the API key")
+    config_parser.add_argument("--model", help="Set the model name")
+    config_parser.add_argument("--base-url", "--api-base", dest="base_url", help="Set the model base URL")
     config_parser.add_argument(
         "--provider",
         "--api-provider",
         dest="provider",
         choices=["openai", "deepseek", "anthropic", "custom"],
-        help="设置API提供商",
+        help="Set the model provider",
     )
-    config_parser.add_argument("--http-proxy", "--proxy", dest="http_proxy", help="设置HTTP代理")
+    config_parser.add_argument("--http-proxy", "--proxy", dest="http_proxy", help="Set the HTTP proxy")
 
-    scan_file_parser = subparsers.add_parser("file", aliases=["scan-file"], help="扫描单个文件")
-    scan_file_parser.add_argument("path", help="文件路径")
-    scan_file_parser.add_argument("--output", "-o", help="输出报告路径")
-    scan_file_parser.add_argument("--model", "-m", help="使用的模型名称", default="default")
+    scan_file_parser = subparsers.add_parser("file", aliases=["scan-file"], help="Scan a single file")
+    scan_file_parser.add_argument("path", help="Path to the file")
+    scan_file_parser.add_argument("--output", "-o", help="Path for the generated report")
+    scan_file_parser.add_argument("--model", "-m", default="default", help="Model name to use")
 
-    scan_dir_parser = subparsers.add_parser("dir", aliases=["scan-dir"], help="扫描目录")
-    scan_dir_parser.add_argument("path", help="目录路径")
-    scan_dir_parser.add_argument("--output", "-o", help="输出报告路径")
-    scan_dir_parser.add_argument("--model", "-m", help="使用的模型名称", default="default")
-    scan_dir_parser.add_argument("--exclude", "-e", help="排除的文件/目录模式（glob格式）")
+    scan_dir_parser = subparsers.add_parser("dir", aliases=["scan-dir"], help="Scan a directory")
+    scan_dir_parser.add_argument("path", help="Path to the directory")
+    scan_dir_parser.add_argument("--output", "-o", help="Path for the generated report")
+    scan_dir_parser.add_argument("--model", "-m", default="default", help="Model name to use")
+    scan_dir_parser.add_argument("--exclude", "-e", help="Glob pattern to exclude")
 
     scan_github_parser = subparsers.add_parser(
-        "github", aliases=["scan-github"], help="扫描GitHub仓库"
+        "github",
+        aliases=["scan-github"],
+        help="Scan a GitHub repository by cloning it locally first",
     )
-    scan_github_parser.add_argument("url", help="GitHub仓库URL")
-    scan_github_parser.add_argument("--output", "-o", help="输出报告路径")
-    scan_github_parser.add_argument("--model", "-m", help="使用的模型名称", default="default")
+    scan_github_parser.add_argument("url", help="GitHub repository URL")
+    scan_github_parser.add_argument("--output", "-o", help="Path for the generated report")
+    scan_github_parser.add_argument("--model", "-m", default="default", help="Model name to use")
 
     merge_parser = subparsers.add_parser(
-        "git-merge", aliases=["scan-git-merge"], help="扫描Git合并差异"
+        "git-merge",
+        aliases=["scan-git-merge"],
+        help="Scan files changed against a target branch in the current repository",
     )
-    merge_parser.add_argument("branch", help="目标分支")
-    merge_parser.add_argument("--output", "-o", help="输出报告路径")
-    merge_parser.add_argument("--model", "-m", help="使用的模型名称", default="default")
+    merge_parser.add_argument("branch", help="Base branch or ref")
+    merge_parser.add_argument("--output", "-o", help="Path for the generated report")
+    merge_parser.add_argument("--model", "-m", default="default", help="Model name to use")
 
-    subparsers.add_parser("update", help="更新漏洞库")
+    subparsers.add_parser("update", help="Update the vulnerability database")
 
-    import_rule_parser = subparsers.add_parser("import-rule", help="从URL导入规则")
-    import_rule_parser.add_argument("url", help="规则URL")
+    import_rule_parser = subparsers.add_parser("import-rule", help="Import rules from a URL")
+    import_rule_parser.add_argument("url", help="Rule definition URL")
 
-    import_github_parser = subparsers.add_parser("import-github", help="从GitHub导入规则")
-    import_github_parser.add_argument("--repo-url", required=True, help="GitHub仓库URL")
-    import_github_parser.add_argument("--branch", default="main", help="分支名")
-    import_github_parser.add_argument("--languages", help="语言列表，使用逗号分隔")
+    import_github_parser = subparsers.add_parser("import-github", help="Import rules from a GitHub repository")
+    import_github_parser.add_argument("--repo-url", required=True, help="GitHub repository URL")
+    import_github_parser.add_argument("--branch", default="main", help="Branch to import from")
+    import_github_parser.add_argument("--languages", help="Comma-separated language filter")
 
-    subparsers.add_parser("gui", help="启动图形界面")
+    mcp_parser = subparsers.add_parser("mcp", help="Run the CodeScan MCP server")
+    mcp_parser.add_argument(
+        "--transport",
+        choices=["stdio", "sse", "streamable-http"],
+        default="stdio",
+        help="MCP transport to expose",
+    )
+    mcp_parser.add_argument("--host", default="127.0.0.1", help="Host for HTTP transports")
+    mcp_parser.add_argument("--port", type=int, default=8000, help="Port for HTTP transports")
+    mcp_parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Server log level",
+    )
+
+    subparsers.add_parser("gui", help="Launch the desktop GUI")
 
     return parser
 
@@ -103,9 +121,8 @@ def main() -> int:
     if args.command is None:
         parser.print_help()
         if not check_api_config():
-            print("\n提示: 您需要先配置API密钥才能使用分析功能。")
-            print("请使用以下命令配置API密钥:")
-            print("python -m codescan config --api-key YOUR_API_KEY")
+            print("\nTip: configure an API key before using the AI analysis flow.")
+            print("Run: python -m codescan config --api-key YOUR_API_KEY")
         return 0
 
     if args.command == "gui":
@@ -117,6 +134,11 @@ def main() -> int:
         app = QApplication(sys.argv)
         apply_style(app)
         return gui_main(app)
+
+    if args.command == "mcp":
+        from .mcp_server import run_server_from_namespace
+
+        return run_server_from_namespace(args)
 
     return cli_main(args)
 
