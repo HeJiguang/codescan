@@ -1,0 +1,10 @@
+interface:
+  display_name: "CodeScan Review"
+  short_description: "Use CodeScan MCP or CLI flows to review code for actionable security issues."
+  icon_small: "./assets/codescan-review.svg"
+  icon_large: "./assets/codescan-review.svg"
+  brand_color: "#0F172A"
+  default_prompt: "Use $codescan-review to inspect this codebase for actionable security findings with CodeScan."
+
+policy:
+  allow_implicit_invocation: true

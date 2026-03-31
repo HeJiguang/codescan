@@ -26,6 +26,7 @@ AI-assisted code security scanning for repositories, files, and Git diffs.
 - [Quick Start](#quick-start)
 - [CLI Usage](#cli-usage)
 - [MCP Server](#mcp-server)
+- [Skill](#skill)
 - [Quality Gate](#quality-gate)
 - [Roadmap](#roadmap)
 
@@ -190,6 +191,25 @@ Each tool returns structured scan output with top-level fields such as `issues`,
 
 More detail is available in [docs/mcp.md](docs/mcp.md).
 
+## Skill
+
+CodeScan also ships an installable Codex skill at [`skills/codescan-review`](skills/codescan-review/SKILL.md).
+
+This skill is designed to sit on top of the MCP server:
+
+- MCP gives Codex real CodeScan tools
+- the skill teaches Codex when to use them and how to present the findings
+
+Install it from this repo with Codex's GitHub skill installer:
+
+```bash
+install-skill-from-github.py --repo HeJiguang/codescan --path skills/codescan-review
+```
+
+Then restart Codex to pick up the installed skill.
+
+More detail is available in [docs/skill.md](docs/skill.md).
+
 ## What Ships Today
 
 - Unified provider layer for modern chat models
@@ -198,6 +218,7 @@ More detail is available in [docs/mcp.md](docs/mcp.md).
 - HTML / JSON / text report generation
 - Desktop GUI
 - MCP server with structured security tools
+- Installable `codescan-review` skill for Codex
 - `pyproject.toml` packaging and console scripts
 - GitHub Actions CI and test coverage
 
@@ -245,6 +266,7 @@ python -m codescan mcp --help
 
 - [Technical Doc](docs/technical_doc.md)
 - [MCP Guide](docs/mcp.md)
+- [Skill Guide](docs/skill.md)
 - [Docs Index](docs/README.md)
 - [Rules Guide](docs/rules_guide.md)
 - [Contributing](docs/CONTRIBUTING.md)

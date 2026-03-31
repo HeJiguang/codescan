@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">CodeScan Review</title>
+  <desc id="desc">Shield and search icon for the CodeScan review skill.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)" />
+  <path
+    d="M64 20l31 10v26c0 23-13 37-31 52C46 93 33 79 33 56V30l31-10z"
+    fill="#e2e8f0"
+    opacity="0.95"
+  />
+  <circle cx="58" cy="56" r="15" fill="none" stroke="#0f172a" stroke-width="8" />
+  <path d="M69 67l16 16" stroke="#0f172a" stroke-width="8" stroke-linecap="round" />
+</svg>
