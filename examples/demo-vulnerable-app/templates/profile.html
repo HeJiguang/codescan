@@ -1,0 +1,5 @@
+<section class="profile-card">
+  <h1>{{ user_name|safe }}</h1>
+  <div class="profile-bio">{{ user_bio|safe }}</div>
+  <div class="profile-debug">{{ request.args.get("debug")|safe }}</div>
+</section>

@@ -28,6 +28,7 @@ AI-assisted code security scanning for repositories, files, and Git diffs.
 - [MCP Server](#mcp-server)
 - [Skill](#skill)
 - [Codex](#use-with-codex)
+- [Example Output](#example-output)
 - [Quality Gate](#quality-gate)
 - [Roadmap](#roadmap)
 
@@ -237,6 +238,21 @@ Use $codescan-review to scan this repository and summarize the top security risk
 
 Full setup notes and more example prompts are in [Use With Codex](docs/codex.md).
 
+## Example Output
+
+<p align="center">
+  <img src="docs/assets/sample-findings.svg" alt="CodeScan sample findings preview" width="100%" />
+</p>
+
+This repo now includes a tiny intentionally vulnerable fixture plus a representative structured scan result:
+
+- [`examples/demo-vulnerable-app`](examples/demo-vulnerable-app)
+- [`examples/sample-mcp-result.json`](examples/sample-mcp-result.json)
+
+That gives visitors something concrete to inspect before they install or configure a model.
+
+More detail is available in [Example Output](docs/example-output.md).
+
 ## What Ships Today
 
 - Unified provider layer for modern chat models
@@ -247,6 +263,7 @@ Full setup notes and more example prompts are in [Use With Codex](docs/codex.md)
 - MCP server with structured security tools
 - Installable `codescan-review` skill for Codex
 - Codex-specific setup guide and workflow visual
+- Demo vulnerable fixture and example MCP-style findings
 - `pyproject.toml` packaging and console scripts
 - GitHub Actions CI and test coverage
 
@@ -296,6 +313,7 @@ python -m codescan mcp --help
 - [MCP Guide](docs/mcp.md)
 - [Skill Guide](docs/skill.md)
 - [Use With Codex](docs/codex.md)
+- [Example Output](docs/example-output.md)
 - [Docs Index](docs/README.md)
 - [Rules Guide](docs/rules_guide.md)
 - [Contributing](docs/CONTRIBUTING.md)

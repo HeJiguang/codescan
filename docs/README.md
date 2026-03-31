@@ -9,8 +9,9 @@ This directory collects the main technical and contribution docs for CodeScan.
 3. [MCP Guide](mcp.md)
 4. [Skill Guide](skill.md)
 5. [Use With Codex](codex.md)
-6. [Rules Guide](rules_guide.md)
-7. [Contributing](CONTRIBUTING.md)
+6. [Example Output](example-output.md)
+7. [Rules Guide](rules_guide.md)
+8. [Contributing](CONTRIBUTING.md)
 
 ## User-Facing Docs
 
@@ -18,6 +19,7 @@ This directory collects the main technical and contribution docs for CodeScan.
 - [MCP Guide](mcp.md)
 - [Skill Guide](skill.md)
 - [Use With Codex](codex.md)
+- [Example Output](example-output.md)
 - [Rules Guide](rules_guide.md)
 
 ## Developer Docs

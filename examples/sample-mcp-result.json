@@ -1,0 +1,94 @@
+{
+  "scan_id": "demo_directory_scan",
+  "scan_path": "examples/demo-vulnerable-app",
+  "scan_type": "directory",
+  "timestamp": 1743408000.0,
+  "scan_model": "demo-model",
+  "total_issues": 4,
+  "issues_by_severity": {
+    "critical": 0,
+    "high": 2,
+    "medium": 2,
+    "low": 0,
+    "info": 0
+  },
+  "issues": [
+    {
+      "title": "Unsanitized shell execution",
+      "severity": "high",
+      "file_path": "examples/demo-vulnerable-app/app.py",
+      "location": "examples/demo-vulnerable-app/app.py:8",
+      "line_number": 8,
+      "code_snippet": "command = f\"tar -czf backup.tar.gz {user_supplied_target}\"\nreturn os.system(command)",
+      "description": "User-controlled input is interpolated into a shell command and executed directly.",
+      "recommendation": "Use subprocess with argument arrays or validate and escape the input before execution.",
+      "cwe_id": "CWE-78",
+      "owasp_category": "A03:2021-Injection",
+      "vulnerability_type": "command-injection",
+      "confidence": "high"
+    },
+    {
+      "title": "SQL query built from string interpolation",
+      "severity": "high",
+      "file_path": "examples/demo-vulnerable-app/app.py",
+      "location": "examples/demo-vulnerable-app/app.py:13",
+      "line_number": 13,
+      "code_snippet": "query = f\"SELECT id, username, email FROM users WHERE username = '{username}'\"",
+      "description": "The query string embeds raw user input and can be manipulated into a SQL injection payload.",
+      "recommendation": "Use parameterized queries with placeholders instead of string concatenation.",
+      "cwe_id": "CWE-89",
+      "owasp_category": "A03:2021-Injection",
+      "vulnerability_type": "sql-injection",
+      "confidence": "high"
+    },
+    {
+      "title": "Unsafe HTML rendering in profile view",
+      "severity": "medium",
+      "file_path": "examples/demo-vulnerable-app/templates/profile.html",
+      "location": "examples/demo-vulnerable-app/templates/profile.html:2",
+      "line_number": 2,
+      "code_snippet": "<h1>{{ user_name|safe }}</h1>\n<div class=\"profile-bio\">{{ user_bio|safe }}</div>",
+      "description": "The template disables escaping for user-controlled fields and risks stored or reflected XSS.",
+      "recommendation": "Remove the safe filter and only render trusted, sanitized HTML.",
+      "cwe_id": "CWE-79",
+      "owasp_category": "A03:2021-Injection",
+      "vulnerability_type": "cross-site-scripting",
+      "confidence": "medium"
+    },
+    {
+      "title": "Hardcoded application secret",
+      "severity": "medium",
+      "file_path": "examples/demo-vulnerable-app/app.py",
+      "location": "examples/demo-vulnerable-app/app.py:4",
+      "line_number": 4,
+      "code_snippet": "SECRET_KEY = \"demo-secret-key\"",
+      "description": "A static secret is committed to source control and also reused as a debug fallback.",
+      "recommendation": "Load secrets from environment variables or a dedicated secret manager.",
+      "cwe_id": "CWE-798",
+      "owasp_category": "A02:2021-Cryptographic Failures",
+      "vulnerability_type": "hardcoded-secret",
+      "confidence": "medium"
+    }
+  ],
+  "stats": {
+    "total_files": 2,
+    "languages": {
+      "python": 1,
+      "html": 1
+    }
+  },
+  "project_info": {
+    "project_type": "Demo Vulnerable App",
+    "main_functionality": "Small fixture for showing CodeScan output",
+    "components": [
+      "backup job",
+      "user lookup",
+      "profile rendering"
+    ],
+    "architecture": "single module demo",
+    "use_cases": [
+      "README previews",
+      "MCP output examples"
+    ]
+  }
+}

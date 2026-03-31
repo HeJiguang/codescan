@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">CodeScan sample findings preview</title>
+  <desc id="desc">A stylized dashboard preview showing four findings from the demo vulnerable app.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="1200" height="760" rx="40" fill="url(#bg)" />
+  <text x="70" y="88" font-family="'Segoe UI', Arial, sans-serif" font-size="42" font-weight="700" fill="#0f172a">
+    Example structured findings from CodeScan
+  </text>
+  <text x="70" y="126" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#334155">
+    A repository preview for the demo vulnerable app, shaped like an MCP result that Codex can reason over.
+  </text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="170" width="1060" height="520" rx="30" fill="url(#panel)" />
+  </g>
+
+  <rect x="104" y="208" width="250" height="108" rx="20" fill="#1e293b" />
+  <rect x="378" y="208" width="250" height="108" rx="20" fill="#1e293b" />
+  <rect x="652" y="208" width="250" height="108" rx="20" fill="#1e293b" />
+  <rect x="926" y="208" width="170" height="108" rx="20" fill="#1e293b" />
+
+  <g font-family="'Segoe UI', Arial, sans-serif" fill="#e2e8f0">
+    <text x="132" y="248" font-size="18">Total issues</text>
+    <text x="132" y="292" font-size="38" font-weight="700">4</text>
+    <text x="406" y="248" font-size="18">High severity</text>
+    <text x="406" y="292" font-size="38" font-weight="700">2</text>
+    <text x="680" y="248" font-size="18">Medium severity</text>
+    <text x="680" y="292" font-size="38" font-weight="700">2</text>
+    <text x="954" y="248" font-size="18">Files</text>
+    <text x="954" y="292" font-size="38" font-weight="700">2</text>
+  </g>
+
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <rect x="104" y="352" width="992" height="74" rx="18" fill="#7f1d1d" />
+    <rect x="104" y="444" width="992" height="74" rx="18" fill="#7f1d1d" />
+    <rect x="104" y="536" width="992" height="74" rx="18" fill="#78350f" />
+    <rect x="104" y="628" width="992" height="74" rx="18" fill="#78350f" />
+
+    <text x="132" y="396" font-size="22" font-weight="700" fill="#ffffff">High · Unsanitized shell execution · app.py:8</text>
+    <text x="132" y="487" font-size="22" font-weight="700" fill="#ffffff">High · SQL query built from string interpolation · app.py:13</text>
+    <text x="132" y="579" font-size="22" font-weight="700" fill="#ffffff">Medium · Unsafe HTML rendering in profile view · profile.html:2</text>
+    <text x="132" y="671" font-size="22" font-weight="700" fill="#ffffff">Medium · Hardcoded application secret · app.py:4</text>
+
+    <text x="826" y="396" font-size="16" fill="#fee2e2">CWE-78 · command injection</text>
+    <text x="796" y="487" font-size="16" fill="#fee2e2">CWE-89 · sql injection</text>
+    <text x="762" y="579" font-size="16" fill="#fde68a">CWE-79 · cross-site scripting</text>
+    <text x="804" y="671" font-size="16" fill="#fde68a">CWE-798 · hardcoded secret</text>
+  </g>
+</svg>
