@@ -1,0 +1,62 @@
+name: Bug report
+description: Report a reproducible bug in CodeScan, its MCP server, skill workflow, or docs.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report.
+        Please make the report concrete enough that someone outside your environment can reproduce it.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the actual behavior.
+      placeholder: CodeScan returned an empty result for a directory scan...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      placeholder: I expected at least one issue for the included vulnerable fixture...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area is affected?
+      options:
+        - CLI
+        - MCP server
+        - Codex skill
+        - GUI
+        - Reports
+        - Rules
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Include commands, paths, or prompts when relevant.
+      placeholder: |
+        1. Run `python -m codescan dir ...`
+        2. Use provider ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, OS, and provider/model if relevant.
+      placeholder: Python 3.11 on Windows 11, DeepSeek / deepseek-chat
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      render: text

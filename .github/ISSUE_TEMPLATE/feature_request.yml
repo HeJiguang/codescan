@@ -1,0 +1,49 @@
+name: Feature request
+description: Propose a feature that would make CodeScan more useful, easier to adopt, or easier to contribute to.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea.
+        The most useful requests describe a real workflow, not only a technology preference.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      placeholder: It is hard to consume CodeScan results in GitHub code scanning...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which area should this improve?
+      options:
+        - Scanner quality
+        - MCP server
+        - Codex skill
+        - GUI
+        - Reports
+        - Documentation
+        - CI / packaging
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      placeholder: Add SARIF output so results can be uploaded to GitHub code scanning...
+    validations:
+      required: true
+  - type: textarea
+    id: users
+    attributes:
+      label: Who benefits from this?
+      placeholder: Small teams using CodeScan through Codex and GitHub Actions...
+  - type: textarea
+    id: first_version
+    attributes:
+      label: What would a good first version look like?
+      placeholder: Basic SARIF export for file and directory scans, even without GUI support yet...

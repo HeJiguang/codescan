@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Read the contributing guide
+    url: https://github.com/HeJiguang/codescan/blob/main/docs/CONTRIBUTING.md
+    about: Start here if you want to contribute or are looking for a good first contribution path.
+  - name: Read the Codex usage guide
+    url: https://github.com/HeJiguang/codescan/blob/main/docs/codex.md
+    about: Start here if you want to use CodeScan through Codex, MCP, and the included skill.

@@ -6,8 +6,8 @@
 
 # CodeScan
 
-AI-assisted code security scanning for repositories, files, and Git diffs.  
-规则层先落地，LLM 层再补语义分析；现在还可以直接作为 MCP server 接进 Codex、Cursor、Claude 等 agent 工作流。
+AI-assisted code security scanning for files, repositories, Git diffs, and coding agents.  
+先用规则打底，再用 LLM 做语义补强；现在还可以通过 MCP 和 Skill 直接接入 Codex。
 
 [![CI](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml/badge.svg)](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-0F172A?logo=python&logoColor=white)
@@ -21,40 +21,47 @@ AI-assisted code security scanning for repositories, files, and Git diffs.
 ## Quick Links
 
 - [Why CodeScan](#why-codescan)
-- [Highlights](#highlights)
-- [Architecture](#architecture)
+- [Who This Is For](#who-this-is-for)
 - [Quick Start](#quick-start)
-- [CLI Usage](#cli-usage)
-- [MCP Server](#mcp-server)
-- [Skill](#skill)
-- [Codex](#use-with-codex)
+- [Use With Codex](#use-with-codex)
 - [Example Output](#example-output)
-- [Quality Gate](#quality-gate)
+- [Get Involved](#get-involved)
 - [Roadmap](#roadmap)
 
 ## Why CodeScan
 
-Many “AI code scanners” are just chat wrappers around a code dump. They can sound smart, but the output is unstable, hard to integrate, and difficult to maintain.
+Many AI code scanners are just chat wrappers around pasted source files. They can sound smart, but the output is unstable, difficult to integrate, and hard to trust in real workflows.
 
 CodeScan takes a stricter route:
 
-- Start with deterministic rule-based signal.
-- Use LLM analysis to deepen context and explanation.
-- Force structured output instead of free-form blob parsing.
-- Deliver the same result model through CLI, GUI, reports, and now MCP tools.
+- Start with deterministic rule-based signal
+- Use LLM analysis to deepen context and explanation
+- Force structured output instead of free-form blob parsing
+- Deliver the same result model through CLI, reports, MCP tools, and Codex workflows
 
-The goal is not to be an unconstrained security agent. The goal is to be a maintainable scanner that agents can also use well.
+The goal is not to be an unconstrained security agent. The goal is to be a practical, maintainable scanner that agents can actually use well.
 
-## Highlights
+## Who This Is For
+
+CodeScan is most useful today for:
+
+- developers who want a second security pass before merging code
+- teams using Codex, Cursor, or Claude and wanting structured security tooling
+- maintainers who want a lightweight repository triage tool without standing up a large platform
+- contributors interested in security rules, AI-assisted analysis, or MCP-native developer tools
+
+It is not yet positioned as a full replacement for mature enterprise SAST platforms. It is strongest as a high-leverage review assistant and agent-native scanning layer.
+
+## What Makes It Different
 
 | Area | What it does now | Why it matters |
 | --- | --- | --- |
 | `LangChain` providers | Unifies DeepSeek, OpenAI, Anthropic, and OpenAI-compatible endpoints | Swap models without rewriting the scanner |
 | `LangGraph` workflow | Models file analysis as `rule_scan -> llm_scan -> merge_and_finalize` | Gives the AI runtime a real pipeline instead of prompt spaghetti |
-| `CLI + GUI` | Supports command-line and desktop use | Useful both for real workflows and demos |
 | `MCP Server` | Exposes structured scan tools for coding agents | Lets Codex and other MCP clients call CodeScan directly |
-| Report system | Generates HTML / JSON / text output | Human-readable and automation-friendly |
-| Tests + CI | Verifies runtime, packaging, and CLI entry points | Keeps the repo from drifting back into prototype quality |
+| `Skill layer` | Ships an installable `codescan-review` skill | Teaches Codex when to scan and how to present findings |
+| Report system | Generates HTML / JSON / text output | Works for both humans and automation |
+| Tests + CI | Verifies runtime, packaging, docs, and entry points | Keeps the repo from slipping back into prototype quality |
 
 ## Architecture
 
@@ -62,6 +69,7 @@ The goal is not to be an unconstrained security agent. The goal is to be a maint
 flowchart LR
     A["CLI / GUI"] --> B["CodeScanner"]
     A2["MCP Server"] --> B
+    A3["Codex Skill"] --> A2
     B --> C["AIAnalysisService"]
     C --> D["providers.py"]
     C --> E["chains.py"]
@@ -88,8 +96,10 @@ codescan/
 ├── report.py
 ├── vulndb.py
 ├── mcp_server.py
-├── gui.py
 └── __main__.py
+
+skills/
+└── codescan-review/
 ```
 
 ## Quick Start
@@ -112,105 +122,29 @@ source .venv/bin/activate
 # Windows
 .venv\Scripts\activate
 
-pip install -r requirements.txt
-```
-
-Or install it as a package:
-
-```bash
 pip install -e .
 ```
 
-### 3. Configure A Model
+### 3. Configure a model
 
 ```bash
-# Show current configuration
 python -m codescan config --show
-
-# DeepSeek
 python -m codescan config --provider deepseek --api-key YOUR_DEEPSEEK_API_KEY --model deepseek-chat
-
-# OpenAI
-python -m codescan config --provider openai --api-key YOUR_OPENAI_API_KEY --model gpt-4o-mini --base-url https://api.openai.com/v1
-
-# Proxy
-python -m codescan config --http-proxy http://127.0.0.1:7890
 ```
 
-## CLI Usage
+### 4. Try the CLI
 
 ```bash
-# Scan one file
 python -m codescan file /path/to/file.py
-
-# Scan a directory
 python -m codescan dir /path/to/project
-
-# Scan a GitHub repository
-python -m codescan github https://github.com/HeJiguang/codescan.git
-
-# Review the current branch against main
 python -m codescan git-merge main
-
-# Write a JSON report
-python -m codescan file /path/to/file.py --output result.json
-
-# Launch the GUI
-python -m codescan gui
 ```
 
-## MCP Server
-
-CodeScan can now run as an MCP server, which means coding agents can call the scanner directly and receive structured results instead of shelling out to the CLI and parsing report files afterward.
-
-### Start With `stdio`
-
-```bash
-python -m codescan mcp --transport stdio
-```
-
-After `pip install -e .`, you can also use the dedicated script:
+### 5. Try the MCP server
 
 ```bash
 codescan-mcp --transport stdio
 ```
-
-### HTTP Transports
-
-```bash
-codescan-mcp --transport streamable-http --host 127.0.0.1 --port 8000
-codescan-mcp --transport sse --host 127.0.0.1 --port 8000
-```
-
-### Available MCP Tools
-
-- `scan_file(path, model="default")`
-- `scan_directory(path, model="default", max_workers=4)`
-- `scan_git_diff(base_branch, repo_path=".", model="default")`
-- `scan_github_repo(repo_url, model="default", max_workers=4)`
-
-Each tool returns structured scan output with top-level fields such as `issues`, `stats`, `project_info`, `total_issues`, and `issues_by_severity`.
-
-More detail is available in [docs/mcp.md](docs/mcp.md).
-
-## Skill
-
-CodeScan also ships an installable Codex skill at [`skills/codescan-review`](skills/codescan-review/SKILL.md).
-
-This skill is designed to sit on top of the MCP server:
-
-- MCP gives Codex real CodeScan tools
-- the skill teaches Codex when to use them and how to present the findings
-
-Install it from this repo with Codex's GitHub skill installer:
-
-```bash
-install-skill-from-github.py --repo HeJiguang/codescan --path skills/codescan-review
-```
-
-Then restart Codex to pick up the installed skill.
-
-More detail is available in [docs/skill.md](docs/skill.md).
 
 ## Use With Codex
 
@@ -236,7 +170,7 @@ Use $codescan-review to inspect this file for security issues, especially trust 
 Use $codescan-review to scan this repository and summarize the top security risks by severity.
 ```
 
-Full setup notes and more example prompts are in [Use With Codex](docs/codex.md).
+More setup detail is in [Use With Codex](docs/codex.md), [MCP Guide](docs/mcp.md), and [Skill Guide](docs/skill.md).
 
 ## Example Output
 
@@ -244,14 +178,35 @@ Full setup notes and more example prompts are in [Use With Codex](docs/codex.md)
   <img src="docs/assets/sample-findings.svg" alt="CodeScan sample findings preview" width="100%" />
 </p>
 
-This repo now includes a tiny intentionally vulnerable fixture plus a representative structured scan result:
+This repo includes a tiny intentionally vulnerable fixture plus a representative structured scan result:
 
 - [`examples/demo-vulnerable-app`](examples/demo-vulnerable-app)
 - [`examples/sample-mcp-result.json`](examples/sample-mcp-result.json)
 
 That gives visitors something concrete to inspect before they install or configure a model.
 
-More detail is available in [Example Output](docs/example-output.md).
+More detail is in [Example Output](docs/example-output.md).
+
+## Get Involved
+
+If you want more people to use an open-source tool, the first step is making it easy to understand and easy to contribute to. This repo now has MCP docs, Codex docs, example outputs, and an installable skill. The next growth comes from contributors.
+
+Good ways to help:
+
+- improve rule quality and reduce false positives
+- add Semgrep or AST-backed checks
+- improve GUI usability or split `gui.py`
+- add benchmark repositories and evaluation fixtures
+- improve docs, examples, onboarding, and Codex workflows
+
+If you want to contribute, start here:
+
+- [Contributing Guide](docs/CONTRIBUTING.md)
+- [MCP Guide](docs/mcp.md)
+- [Skill Guide](docs/skill.md)
+- the `good first issues` lane described in the contributing guide
+
+If you find a bug or have an idea, use the GitHub issue templates in this repo. They are there to make outside participation easier, not heavier.
 
 ## What Ships Today
 
@@ -262,29 +217,9 @@ More detail is available in [Example Output](docs/example-output.md).
 - Desktop GUI
 - MCP server with structured security tools
 - Installable `codescan-review` skill for Codex
-- Codex-specific setup guide and workflow visual
+- Codex-specific setup guide and workflow visuals
 - Demo vulnerable fixture and example MCP-style findings
-- `pyproject.toml` packaging and console scripts
 - GitHub Actions CI and test coverage
-
-## Rule System
-
-CodeScan currently layers three analysis sources:
-
-1. Built-in vulnerability rules
-2. Imported Semgrep-compatible rule sets
-3. LLM-assisted semantic analysis
-
-```bash
-# Update the vulnerability database
-python -m codescan update
-
-# Import rules from a URL
-python -m codescan import-rule https://example.com/rules.yaml
-
-# Import Semgrep rules from GitHub
-python -m codescan import-github --repo-url https://github.com/returntocorp/semgrep-rules --branch main
-```
 
 ## Quality Gate
 
@@ -300,11 +235,12 @@ python -m codescan mcp --help
 - [x] Rebuild the AI runtime with `LangChain + LangGraph`
 - [x] Repair CLI / GUI / report-layer contract mismatches
 - [x] Add packaging metadata, tests, and public CI
-- [x] Extract GUI presentation helpers out of the giant `gui.py`
 - [x] Publish an MCP server surface for coding agents
-- [ ] Continue splitting scan/export/settings logic out of `gui.py`
-- [ ] Add screenshots and example reports to the README
+- [x] Publish an installable Codex skill
+- [x] Add concrete example outputs to the repo homepage
 - [ ] Strengthen rule trustworthiness with deeper Semgrep / AST review flows
+- [ ] Add SARIF output and GitHub code scanning integration
+- [ ] Continue splitting scan/export/settings logic out of `gui.py`
 - [ ] Add benchmark repositories and repeatable evaluation fixtures
 
 ## Docs
@@ -314,8 +250,6 @@ python -m codescan mcp --help
 - [Skill Guide](docs/skill.md)
 - [Use With Codex](docs/codex.md)
 - [Example Output](docs/example-output.md)
-- [Docs Index](docs/README.md)
-- [Rules Guide](docs/rules_guide.md)
 - [Contributing](docs/CONTRIBUTING.md)
 
 ## License
