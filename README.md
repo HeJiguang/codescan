@@ -27,6 +27,7 @@ AI-assisted code security scanning for repositories, files, and Git diffs.
 - [CLI Usage](#cli-usage)
 - [MCP Server](#mcp-server)
 - [Skill](#skill)
+- [Codex](#use-with-codex)
 - [Quality Gate](#quality-gate)
 - [Roadmap](#roadmap)
 
@@ -210,6 +211,32 @@ Then restart Codex to pick up the installed skill.
 
 More detail is available in [docs/skill.md](docs/skill.md).
 
+## Use With Codex
+
+<p align="center">
+  <img src="docs/assets/codex-workflow.svg" alt="CodeScan Codex workflow" width="100%" />
+</p>
+
+If you want CodeScan to feel native inside Codex, use both layers together:
+
+1. Install the `codescan-review` skill
+2. Run `codescan-mcp --transport stdio`
+3. Ask Codex for a security review with a concrete scan scope
+
+That gives Codex workflow guidance plus real structured scan tools.
+
+Good starter prompts:
+
+```text
+Use $codescan-review to inspect the current branch against main and report only actionable security findings.
+
+Use $codescan-review to inspect this file for security issues, especially trust boundaries and command execution risks.
+
+Use $codescan-review to scan this repository and summarize the top security risks by severity.
+```
+
+Full setup notes and more example prompts are in [Use With Codex](docs/codex.md).
+
 ## What Ships Today
 
 - Unified provider layer for modern chat models
@@ -219,6 +246,7 @@ More detail is available in [docs/skill.md](docs/skill.md).
 - Desktop GUI
 - MCP server with structured security tools
 - Installable `codescan-review` skill for Codex
+- Codex-specific setup guide and workflow visual
 - `pyproject.toml` packaging and console scripts
 - GitHub Actions CI and test coverage
 
@@ -267,6 +295,7 @@ python -m codescan mcp --help
 - [Technical Doc](docs/technical_doc.md)
 - [MCP Guide](docs/mcp.md)
 - [Skill Guide](docs/skill.md)
+- [Use With Codex](docs/codex.md)
 - [Docs Index](docs/README.md)
 - [Rules Guide](docs/rules_guide.md)
 - [Contributing](docs/CONTRIBUTING.md)

@@ -8,14 +8,16 @@ This directory collects the main technical and contribution docs for CodeScan.
 2. [Technical Doc](technical_doc.md)
 3. [MCP Guide](mcp.md)
 4. [Skill Guide](skill.md)
-5. [Rules Guide](rules_guide.md)
-6. [Contributing](CONTRIBUTING.md)
+5. [Use With Codex](codex.md)
+6. [Rules Guide](rules_guide.md)
+7. [Contributing](CONTRIBUTING.md)
 
 ## User-Facing Docs
 
 - [Project README](../README.md)
 - [MCP Guide](mcp.md)
 - [Skill Guide](skill.md)
+- [Use With Codex](codex.md)
 - [Rules Guide](rules_guide.md)
 
 ## Developer Docs
@@ -32,3 +34,4 @@ The current mainline architecture is centered on:
 - structured scan results for reports and clients
 - MCP exposure for agent-native code review workflows
 - an installable skill layer for Codex-native review guidance
+- explicit Codex-facing setup docs and example prompts
