@@ -22,6 +22,7 @@ AI-assisted code security scanning for files, repositories, Git diffs, and codin
 
 - [Why CodeScan](#why-codescan)
 - [Who This Is For](#who-this-is-for)
+- [Try It In 5 Minutes](#try-it-in-5-minutes)
 - [Quick Start](#quick-start)
 - [Use With Codex](#use-with-codex)
 - [Example Output](#example-output)
@@ -51,6 +52,24 @@ CodeScan is most useful today for:
 - contributors interested in security rules, AI-assisted analysis, or MCP-native developer tools
 
 It is not yet positioned as a full replacement for mature enterprise SAST platforms. It is strongest as a high-leverage review assistant and agent-native scanning layer.
+
+## Try It In 5 Minutes
+
+If you just landed on this repo, do this first:
+
+1. Browse the example fixture at [`examples/demo-vulnerable-app`](examples/demo-vulnerable-app)
+2. Open the representative result at [`examples/sample-mcp-result.json`](examples/sample-mcp-result.json)
+3. Read the visual walkthrough in [Example Output](docs/example-output.md)
+
+If you want a real local run:
+
+```bash
+pip install -e .
+python -m codescan config --provider deepseek --api-key YOUR_API_KEY --model deepseek-chat
+python -m codescan dir examples/demo-vulnerable-app --output demo-result.json
+```
+
+That path is short on purpose. A tool gets adopted when people can reach their first believable result quickly.
 
 ## What Makes It Different
 
@@ -202,6 +221,7 @@ Good ways to help:
 If you want to contribute, start here:
 
 - [Contributing Guide](docs/CONTRIBUTING.md)
+- [Good First Issues Guide](docs/good-first-issues.md)
 - [MCP Guide](docs/mcp.md)
 - [Skill Guide](docs/skill.md)
 - the `good first issues` lane described in the contributing guide
@@ -250,6 +270,7 @@ python -m codescan mcp --help
 - [Skill Guide](docs/skill.md)
 - [Use With Codex](docs/codex.md)
 - [Example Output](docs/example-output.md)
+- [Good First Issues](docs/good-first-issues.md)
 - [Contributing](docs/CONTRIBUTING.md)
 
 ## License

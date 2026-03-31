@@ -6,8 +6,10 @@ def test_readme_highlights_adoption_and_contribution_paths() -> None:
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
 
     assert "## Who This Is For" in readme
+    assert "## Try It In 5 Minutes" in readme
     assert "## Get Involved" in readme
     assert "docs/CONTRIBUTING.md" in readme
+    assert "docs/good-first-issues.md" in readme
     assert "good first issues" in readme.lower()
 
 
@@ -32,3 +34,18 @@ def test_contributing_doc_is_modernized_for_current_repo() -> None:
     assert "python -m pytest tests -q" in contributing
     assert "python -m compileall codescan" in contributing
     assert "good first contribution" in contributing.lower()
+
+
+def test_security_and_good_first_issue_docs_exist() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    security = repo_root / "SECURITY.md"
+    good_first_issues = repo_root / "docs" / "good-first-issues.md"
+
+    assert security.exists(), "Security policy should exist"
+    assert good_first_issues.exists(), "Good first issues guide should exist"
+
+    security_text = security.read_text(encoding="utf-8")
+    issues_text = good_first_issues.read_text(encoding="utf-8")
+
+    assert "Reporting a Vulnerability" in security_text
+    assert "good first issue" in issues_text.lower()
