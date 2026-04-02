@@ -178,10 +178,21 @@ class CodeScanner:
 
         issues: List[AIFileIssue] = []
         lines = content.split("\n")
+        
+        # Determine if we should be extra careful about prose false positives
+        is_prose_file = file_path.lower().endswith(('.md', '.txt', '.rst', '.adoc'))
 
         for pattern in relevant_patterns:
             pattern_text = pattern.get("pattern", "")
             if not pattern_text:
+                continue
+                
+            # If it's a secret-related pattern and we're in a prose file,
+            # skip rule-based scanning to avoid false positives. 
+            # AI analysis will still have a chance to look at it if the 
+            # file is passed to it, but rules are too blunt.
+            is_secret_pattern = any(word in pattern_text.lower() for word in ['password', 'secret', 'token', 'api_key', 'apikey', '密钥'])
+            if is_prose_file and is_secret_pattern:
                 continue
 
             try:
