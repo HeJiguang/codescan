@@ -1,5 +1,11 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Ask a question or share a workflow
+    url: https://github.com/HeJiguang/codescan/discussions
+    about: Use Discussions for setup help, MCP workflows, Codex usage, or real-world examples.
+  - name: Read the support guide
+    url: https://github.com/HeJiguang/codescan/blob/main/SUPPORT.md
+    about: Find the right place for questions, bug reports, feature requests, and security reports.
   - name: Read the contributing guide
     url: https://github.com/HeJiguang/codescan/blob/main/docs/CONTRIBUTING.md
     about: Start here if you want to contribute or are looking for a good first contribution path.

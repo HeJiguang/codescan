@@ -12,6 +12,8 @@ This directory collects the main technical and contribution docs for CodeScan.
 6. [Example Output](example-output.md)
 7. [Rules Guide](rules_guide.md)
 8. [Contributing](CONTRIBUTING.md)
+9. [Community Guide](community.md)
+10. [Support](../SUPPORT.md)
 
 ## User-Facing Docs
 
@@ -22,12 +24,15 @@ This directory collects the main technical and contribution docs for CodeScan.
 - [Use With Codex](codex.md)
 - [Example Output](example-output.md)
 - [Rules Guide](rules_guide.md)
+- [Community Guide](community.md)
+- [Support](../SUPPORT.md)
 
 ## Developer Docs
 
 - [Technical Doc](technical_doc.md)
 - [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Community Guide](community.md)
 
 ## Notes
 

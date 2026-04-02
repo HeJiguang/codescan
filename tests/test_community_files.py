@@ -66,16 +66,24 @@ def test_user_facing_docs_avoid_local_asset_paths_and_overly_meta_copy() -> None
     assert "That path is short on purpose." not in readme
 
 
-def test_security_and_good_first_issue_docs_exist() -> None:
+def test_security_support_and_good_first_issue_docs_exist() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     security = repo_root / "SECURITY.md"
+    support = repo_root / "SUPPORT.md"
     good_first_issues = repo_root / "docs" / "good-first-issues.md"
+    community = repo_root / "docs" / "community.md"
 
     assert security.exists(), "Security policy should exist"
+    assert support.exists(), "Support guide should exist"
     assert good_first_issues.exists(), "Good first issues guide should exist"
+    assert community.exists(), "Community guide should exist"
 
     security_text = security.read_text(encoding="utf-8")
+    support_text = support.read_text(encoding="utf-8")
     issues_text = good_first_issues.read_text(encoding="utf-8")
+    community_text = community.read_text(encoding="utf-8")
 
     assert "Reporting a Vulnerability" in security_text
+    assert "Questions And Setup Help" in support_text
     assert "good first issue" in issues_text.lower()
+    assert "High-Value Feedback" in community_text

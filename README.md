@@ -240,6 +240,8 @@ Start here:
 
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [Good First Issues Guide](docs/good-first-issues.md)
+- [Community Guide](docs/community.md)
+- [Support](SUPPORT.md)
 - [MCP Guide](docs/mcp.md)
 - [Skill Guide](docs/skill.md)
 - the `good first issues` lane described in the contributing guide
@@ -289,7 +291,9 @@ python -m codescan mcp --help
 - [Use With Codex](docs/codex.md)
 - [Example Output](docs/example-output.md)
 - [Good First Issues](docs/good-first-issues.md)
+- [Community Guide](docs/community.md)
 - [Contributing](docs/CONTRIBUTING.md)
+- [Support](SUPPORT.md)
 
 ## License
 
