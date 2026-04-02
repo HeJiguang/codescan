@@ -11,7 +11,7 @@ This project is most valuable when contributors make it easier to:
 
 ## Good First Contribution Paths
 
-If you want a good first contribution, start with one of these lanes:
+For a first contribution, start with one of these lanes:
 
 - improve documentation, examples, and onboarding
 - add or refine vulnerability rules

@@ -2,7 +2,7 @@
 
 ## Overview
 
-CodeScan is now best used from Codex in a two-layer setup:
+Recommended Codex setup:
 
 1. `codescan-review` skill for workflow guidance
 2. `codescan-mcp` for real callable scan tools
@@ -47,7 +47,7 @@ Use this when you already have a local checkout and want the highest-value defau
 Use $codescan-review to inspect the current branch against main and report only actionable security findings.
 ```
 
-This should naturally bias Codex toward `scan_git_diff`.
+Use this for branch review or pre-merge inspection.
 
 ### Suspicious file review
 
@@ -57,7 +57,7 @@ Use this when one file looks risky:
 Use $codescan-review to inspect this file for security issues. Focus on input validation, secrets, command execution, and trust boundaries.
 ```
 
-This should bias Codex toward `scan_file`.
+Use this for focused review of one risky file.
 
 ### Repository intake
 
@@ -67,7 +67,7 @@ Use this when you want a broad first pass:
 Use $codescan-review to scan this repository and summarize the top security risks, ordered by severity.
 ```
 
-This should bias Codex toward `scan_directory`.
+Use this for repository intake or broad sweeps.
 
 ### Remote repository review
 
@@ -77,7 +77,7 @@ Use this when the repository is only available as a Git URL:
 Use $codescan-review to scan this GitHub repository and tell me the highest-confidence security findings first.
 ```
 
-This should bias Codex toward `scan_github_repo`.
+Use this when the repository is only available by URL.
 
 ## What Good Output Looks Like
 
@@ -93,12 +93,12 @@ It should not collapse into generic secure-coding advice unless the scan found l
 
 ## Visual Workflow
 
-![CodeScan with Codex workflow](/D:/Project/CodeScan/docs/assets/codex-workflow.svg)
+![CodeScan with Codex workflow](assets/codex-workflow.svg)
 
-## Why This Matters
+## Why This Setup Works
 
 Without the skill, Codex may know that CodeScan exists but still underuse it or choose the wrong scan scope.
 
 Without MCP, Codex can still use the CLI, but it loses the benefit of structured tool output.
 
-Together, they make CodeScan feel much closer to a native agent capability instead of an external script.
+Together, they give Codex workflow guidance plus structured scan output.

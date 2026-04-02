@@ -132,14 +132,14 @@ The highest-value usage pattern is usually:
 3. inspect `critical` and `high` issues manually before accepting them as real
 4. patch the code and re-run the scan
 
-What MCP does not magically fix:
+What MCP does not fix by itself:
 
 - false positives from lightweight pattern matching
 - missing deeper data-flow analysis
 - the need for human judgment on exploitability and business context
 - the absence of an enforced blocking workflow
 
-So the honest claim is: MCP can make secure review easier and more consistent for coding agents. It cannot, by itself, guarantee secure output.
+MCP can make secure review easier and more consistent for coding agents. It cannot, by itself, guarantee secure output.
 
 ## Verification
 

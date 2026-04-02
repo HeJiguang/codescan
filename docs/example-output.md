@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository now includes a tiny intentionally vulnerable fixture plus a representative structured scan result so visitors can understand what CodeScan produces without configuring a live model first.
+This repository includes a small intentionally vulnerable fixture plus a representative structured scan result so readers can inspect the output shape without configuring a live model first.
 
 ## Fixture
 
@@ -34,14 +34,14 @@ This is the kind of shape Codex receives when CodeScan is used through MCP:
 
 ## Visual Preview
 
-![Sample findings preview](/D:/Project/CodeScan/docs/assets/sample-findings.svg)
+![Sample findings preview](assets/sample-findings.svg)
 
 ## Why This Helps
 
-Open-source scanning tools lose a lot of GitHub visitors before installation because people cannot quickly tell:
+These example assets let readers verify three things before installation:
 
 - what the output looks like
 - whether the findings are actionable
-- whether the result is human-readable or machine-friendly
+- whether the result is human-readable and machine-friendly
 
-These example assets close that gap.
+They are meant to make the review surface concrete before setup.

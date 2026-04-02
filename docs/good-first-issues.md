@@ -1,14 +1,12 @@
 # Good First Issues
 
-This page exists to make outside contributions easier to start.
-
-The fastest way to lose potential contributors is to say “good first issues” without showing what that actually means in this repository.
+This page maps the smallest useful contribution paths in this repository.
 
 ## Good First Issue Lanes
 
 ### 1. Documentation polish
 
-Good if you want a low-risk first contribution.
+Low-risk documentation changes.
 
 Examples:
 
@@ -18,7 +16,7 @@ Examples:
 
 ### 2. Example and preview assets
 
-Good if you like product polish and developer tooling.
+Small product polish or demo improvements.
 
 Examples:
 
@@ -28,7 +26,7 @@ Examples:
 
 ### 3. Tests around current behavior
 
-Good if you want to understand the repo by tightening contracts.
+Focused tests that tighten current behavior.
 
 Examples:
 
@@ -38,7 +36,7 @@ Examples:
 
 ### 4. Rule quality improvements
 
-Good if you care about security signal quality.
+Small improvements to detection quality.
 
 Examples:
 
@@ -48,7 +46,7 @@ Examples:
 
 ### 5. Refactor small slices of large files
 
-Good if you want to make the codebase healthier without taking on a giant rewrite.
+Narrow refactors that improve maintainability without redesigning the repo.
 
 Examples:
 
@@ -65,7 +63,7 @@ A good first issue in CodeScan usually has:
 - tests or docs to prove the change
 - no requirement to redesign the full architecture
 
-## If You Want To Open A PR Without Waiting
+## Small PRs Without Waiting
 
 If you find a small improvement that obviously fits the current direction, you do not need to wait for a giant roadmap discussion.
 

@@ -42,7 +42,7 @@ CodeScan takes a stricter route:
 - Force structured output instead of free-form blob parsing
 - Deliver the same result model through CLI, reports, MCP tools, and Codex workflows
 
-The goal is not to be an unconstrained security agent. The goal is to be a practical, maintainable scanner that agents can actually use well.
+CodeScan focuses on review workflows where deterministic checks, structured findings, and agent integration matter.
 
 ## Who This Is For
 
@@ -53,25 +53,23 @@ CodeScan is most useful today for:
 - maintainers who want a lightweight repository triage tool without standing up a large platform
 - contributors interested in security rules, AI-assisted analysis, or MCP-native developer tools
 
-It is not yet positioned as a full replacement for mature enterprise SAST platforms. It is strongest as a high-leverage review assistant and agent-native scanning layer.
+Today it works best as a review assistant and agent-native scanning layer rather than a full SAST platform.
 
 ## Try It In 5 Minutes
 
-If you just landed on this repo, do this first:
+Start with these three items:
 
 1. Browse the example fixture at [`examples/demo-vulnerable-app`](examples/demo-vulnerable-app)
 2. Open the representative result at [`examples/sample-mcp-result.json`](examples/sample-mcp-result.json)
 3. Read the visual walkthrough in [Example Output](docs/example-output.md)
 
-If you want a real local run:
+For a local run:
 
 ```bash
 pip install -e .
 python -m codescan config --provider deepseek --api-key YOUR_API_KEY --model deepseek-chat
 python -m codescan dir examples/demo-vulnerable-app --output demo-result.json
 ```
-
-That path is short on purpose. A tool gets adopted when people can reach their first believable result quickly.
 
 ## What Makes It Different
 
@@ -173,7 +171,7 @@ codescan-mcp --transport stdio
   <img src="docs/assets/codex-workflow.svg" alt="CodeScan Codex workflow" width="100%" />
 </p>
 
-If you want CodeScan to feel native inside Codex, use both layers together:
+To use CodeScan from Codex, combine both layers:
 
 1. Install the `codescan-review` skill
 2. Run `codescan-mcp --transport stdio`
@@ -195,9 +193,9 @@ More setup detail is in [Use With Codex](docs/codex.md), [MCP Guide](docs/mcp.md
 
 ## Can MCP Actually Improve Agent Security?
 
-Yes, but only in a bounded and practical sense.
+Yes, within a review workflow.
 
-CodeScan can improve the safety of agent-authored code when the agent uses it at the right time and treats it as a review tool instead of a magic guarantee:
+CodeScan can improve the safety of agent-authored code when it is used at the right time and treated as a review tool instead of an automatic guarantee:
 
 - highest value: scan the current branch or diff before merge
 - strong value: scan a suspicious file that touches auth, SQL, shell execution, file handling, templating, or secrets
@@ -219,20 +217,18 @@ In other words: MCP makes secure review workflows easier for agents to use consi
   <img src="docs/assets/sample-findings.svg" alt="CodeScan sample findings preview" width="100%" />
 </p>
 
-This repo includes a tiny intentionally vulnerable fixture plus a representative structured scan result:
+The repo includes a small intentionally vulnerable fixture plus a representative structured scan result:
 
 - [`examples/demo-vulnerable-app`](examples/demo-vulnerable-app)
 - [`examples/sample-mcp-result.json`](examples/sample-mcp-result.json)
 
-That gives visitors something concrete to inspect before they install or configure a model.
+These files show the expected result shape before any local model setup.
 
 More detail is in [Example Output](docs/example-output.md).
 
 ## Get Involved
 
-If you want more people to use an open-source tool, the first step is making it easy to understand and easy to contribute to. This repo now has MCP docs, Codex docs, example outputs, and an installable skill. The next growth comes from contributors.
-
-Good ways to help:
+Current contribution areas:
 
 - improve rule quality and reduce false positives
 - add Semgrep or AST-backed checks
@@ -240,7 +236,7 @@ Good ways to help:
 - add benchmark repositories and evaluation fixtures
 - improve docs, examples, onboarding, and Codex workflows
 
-If you want to contribute, start here:
+Start here:
 
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [Good First Issues Guide](docs/good-first-issues.md)
@@ -248,7 +244,7 @@ If you want to contribute, start here:
 - [Skill Guide](docs/skill.md)
 - the `good first issues` lane described in the contributing guide
 
-If you find a bug or have an idea, use the GitHub issue templates in this repo. They are there to make outside participation easier, not heavier.
+Use the GitHub issue templates for bugs and feature proposals.
 
 ## What Ships Today
 

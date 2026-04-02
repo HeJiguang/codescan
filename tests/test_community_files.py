@@ -51,6 +51,21 @@ def test_contributing_doc_is_modernized_for_current_repo() -> None:
     assert "good first contribution" in contributing.lower()
 
 
+def test_user_facing_docs_avoid_local_asset_paths_and_overly_meta_copy() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    codex_doc = (repo_root / "docs" / "codex.md").read_text(encoding="utf-8")
+    example_doc = (repo_root / "docs" / "example-output.md").read_text(encoding="utf-8")
+
+    assert "/D:/Project/CodeScan" not in codex_doc
+    assert "/D:/Project/CodeScan" not in example_doc
+    assert "(assets/codex-workflow.svg)" in codex_doc
+    assert "(assets/sample-findings.svg)" in example_doc
+
+    assert "The next growth comes from contributors." not in readme
+    assert "That path is short on purpose." not in readme
+
+
 def test_security_and_good_first_issue_docs_exist() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     security = repo_root / "SECURITY.md"
