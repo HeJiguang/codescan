@@ -1,77 +1,99 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
   <title id="title">CodeScan with Codex workflow</title>
-  <desc id="desc">A three-step workflow showing Skill, MCP tools, and structured security findings.</desc>
+  <desc id="desc">A dark product-style workflow showing how a Codex skill, MCP tools, and structured findings fit into one review loop.</desc>
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f8fafc" />
-      <stop offset="100%" stop-color="#dbeafe" />
+    <linearGradient id="bg" x1="48" y1="30" x2="1152" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111E" />
+      <stop offset="1" stop-color="#0C1728" />
     </linearGradient>
-    <linearGradient id="cardA" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#1d4ed8" />
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0F1D31" />
+      <stop offset="1" stop-color="#0C1728" />
     </linearGradient>
-    <linearGradient id="cardB" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0b3b2e" />
-      <stop offset="100%" stop-color="#15803d" />
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#2DD4BF" />
+      <stop offset="1" stop-color="#60A5FA" />
     </linearGradient>
-    <linearGradient id="cardC" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#111827" />
-      <stop offset="100%" stop-color="#374151" />
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.16" />
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#020817" flood-opacity="0.32" />
     </filter>
-    <marker id="arrow" markerWidth="14" markerHeight="14" refX="10" refY="7" orient="auto">
-      <path d="M0 0L14 7L0 14Z" fill="#1d4ed8" />
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0 0L12 6L0 12Z" fill="#4FD1C5" />
     </marker>
   </defs>
 
   <rect width="1200" height="680" rx="36" fill="url(#bg)" />
-  <text x="72" y="90" font-family="'Segoe UI', Arial, sans-serif" font-size="44" font-weight="700" fill="#0f172a">
-    Use CodeScan from Codex in three steps
+  <rect x="20.5" y="20.5" width="1159" height="639" rx="35.5" stroke="#1D324A" />
+
+  <g opacity="0.15">
+    <path d="M60 120H1140" stroke="#35506D" />
+    <path d="M60 180H1140" stroke="#35506D" />
+    <path d="M60 240H1140" stroke="#35506D" />
+    <path d="M60 300H1140" stroke="#35506D" />
+    <path d="M60 360H1140" stroke="#35506D" />
+    <path d="M60 420H1140" stroke="#35506D" />
+    <path d="M60 480H1140" stroke="#35506D" />
+    <path d="M60 540H1140" stroke="#35506D" />
+    <path d="M180 60V620" stroke="#35506D" />
+    <path d="M360 60V620" stroke="#35506D" />
+    <path d="M540 60V620" stroke="#35506D" />
+    <path d="M720 60V620" stroke="#35506D" />
+    <path d="M900 60V620" stroke="#35506D" />
+    <path d="M1080 60V620" stroke="#35506D" />
+  </g>
+
+  <text x="72" y="94" font-family="'Segoe UI', Arial, sans-serif" font-size="44" font-weight="700" fill="#F8FBFF">
+    Run CodeScan inside Codex like a real toolchain
   </text>
-  <text x="72" y="132" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#334155">
-    Install the skill, run the MCP server, and let Codex review code with structured security findings.
+  <text x="72" y="132" font-family="'Segoe UI', Arial, sans-serif" font-size="22" fill="#9EB9D6">
+    Skill guidance starts the review, MCP exposes the scanner, and structured findings feed the repair loop.
   </text>
 
   <g filter="url(#shadow)">
-    <rect x="72" y="198" width="300" height="330" rx="28" fill="url(#cardA)" />
-    <rect x="450" y="198" width="300" height="330" rx="28" fill="url(#cardB)" />
-    <rect x="828" y="198" width="300" height="330" rx="28" fill="url(#cardC)" />
+    <rect x="72" y="190" width="304" height="344" rx="28" fill="url(#panel)" stroke="#21354C" />
+    <rect x="448" y="190" width="304" height="344" rx="28" fill="url(#panel)" stroke="#21354C" />
+    <rect x="824" y="190" width="304" height="344" rx="28" fill="url(#panel)" stroke="#21354C" />
   </g>
 
-  <g fill="#ffffff" font-family="'Segoe UI', Arial, sans-serif">
-    <text x="102" y="258" font-size="22" font-weight="700">1. Install the workflow</text>
-    <text x="102" y="304" font-size="18">• Install `codescan-review` from GitHub</text>
-    <text x="102" y="338" font-size="18">• Restart Codex so the skill is loaded</text>
-    <text x="102" y="372" font-size="18">• Ask for a security review, not a generic audit</text>
-    <rect x="102" y="414" width="240" height="72" rx="16" fill="#ffffff" fill-opacity="0.12" />
-    <text x="120" y="458" font-size="16" font-family="'Cascadia Code', Consolas, monospace">install-skill-from-github.py</text>
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <text x="104" y="242" font-size="18" fill="#7FA3C4">STEP 1</text>
+    <text x="104" y="274" font-size="28" font-weight="700" fill="#F8FBFF">Guide the review</text>
+    <text x="104" y="312" font-size="18" fill="#BBD0E6">Install the skill so Codex chooses a security review flow instead of a vague generic audit.</text>
+    <rect x="104" y="350" width="240" height="70" rx="16" fill="#0A1322" stroke="#20344D" />
+    <text x="122" y="378" font-family="'Cascadia Code', Consolas, monospace" font-size="14" fill="#7FDAC7">$ codescan-review</text>
+    <text x="122" y="404" font-family="'Cascadia Code', Consolas, monospace" font-size="13" fill="#A5BED8">scan scope: branch diff</text>
+    <rect x="104" y="448" width="196" height="30" rx="15" fill="#102239" stroke="#28425D" />
+    <text x="122" y="468" font-size="13" fill="#D7E5F4">workflow bias: findings first</text>
   </g>
 
-  <g fill="#ffffff" font-family="'Segoe UI', Arial, sans-serif">
-    <text x="480" y="258" font-size="22" font-weight="700">2. Expose CodeScan tools</text>
-    <text x="480" y="304" font-size="18">• Start `codescan-mcp --transport stdio`</text>
-    <text x="480" y="338" font-size="18">• Codex gets file, directory, and git diff tools</text>
-    <text x="480" y="372" font-size="18">• Results arrive as structured JSON, not HTML parsing</text>
-    <rect x="480" y="414" width="238" height="72" rx="16" fill="#ffffff" fill-opacity="0.12" />
-    <text x="500" y="458" font-size="16" font-family="'Cascadia Code', Consolas, monospace">codescan-mcp --transport stdio</text>
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <text x="480" y="242" font-size="18" fill="#7FA3C4">STEP 2</text>
+    <text x="480" y="274" font-size="28" font-weight="700" fill="#F8FBFF">Expose scanner tools</text>
+    <text x="480" y="312" font-size="18" fill="#BBD0E6">Run the MCP server so Codex can call file, directory, and diff scans without shelling out or parsing reports.</text>
+    <rect x="480" y="350" width="240" height="70" rx="16" fill="#0A1322" stroke="#20344D" />
+    <text x="498" y="378" font-family="'Cascadia Code', Consolas, monospace" font-size="14" fill="#8BE3D3">codescan-mcp --transport stdio</text>
+    <text x="498" y="404" font-family="'Cascadia Code', Consolas, monospace" font-size="13" fill="#A5BED8">tools: scan_file, scan_git_diff</text>
+    <rect x="480" y="448" width="220" height="30" rx="15" fill="#102239" stroke="#28425D" />
+    <text x="498" y="468" font-size="13" fill="#D7E5F4">payload: stable structured JSON</text>
   </g>
 
-  <g fill="#ffffff" font-family="'Segoe UI', Arial, sans-serif">
-    <text x="858" y="258" font-size="22" font-weight="700">3. Review like an agent</text>
-    <text x="858" y="304" font-size="18">• Use `scan_git_diff` for active branch review</text>
-    <text x="858" y="338" font-size="18">• Use `scan_file` for suspicious hotspots</text>
-    <text x="858" y="372" font-size="18">• Report findings first, then scope limits</text>
-    <rect x="858" y="414" width="236" height="72" rx="16" fill="#ffffff" fill-opacity="0.12" />
-    <text x="878" y="458" font-size="16" font-family="'Cascadia Code', Consolas, monospace">scan_git_diff / scan_file</text>
+  <g font-family="'Segoe UI', Arial, sans-serif">
+    <text x="856" y="242" font-size="18" fill="#7FA3C4">STEP 3</text>
+    <text x="856" y="274" font-size="28" font-weight="700" fill="#F8FBFF">Repair with evidence</text>
+    <text x="856" y="312" font-size="18" fill="#BBD0E6">Use the findings to patch risky code, then re-run focused scans before merge.</text>
+    <rect x="856" y="350" width="240" height="100" rx="16" fill="#0A1322" stroke="#20344D" />
+    <text x="874" y="378" font-family="'Cascadia Code', Consolas, monospace" font-size="13" fill="#FECACA">HIGH  SQL injection risk</text>
+    <text x="874" y="404" font-family="'Cascadia Code', Consolas, monospace" font-size="12" fill="#DBE9F7">src/session.py:14</text>
+    <text x="874" y="428" font-family="'Cascadia Code', Consolas, monospace" font-size="12" fill="#9EB9D6">switch to parameterized query</text>
+    <rect x="856" y="468" width="178" height="30" rx="15" fill="#102239" stroke="#28425D" />
+    <text x="874" y="488" font-size="13" fill="#D7E5F4">loop: scan -> patch -> verify</text>
   </g>
 
-  <path d="M388 364H430" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow)" />
-  <path d="M766 364H808" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" marker-end="url(#arrow)" />
+  <path d="M388 362H430" fill="none" stroke="url(#line)" stroke-width="7" stroke-linecap="round" marker-end="url(#arrow)" />
+  <path d="M764 362H806" fill="none" stroke="url(#line)" stroke-width="7" stroke-linecap="round" marker-end="url(#arrow)" />
 
-  <rect x="72" y="574" width="1056" height="56" rx="18" fill="#ffffff" fill-opacity="0.74" stroke="#cbd5e1" />
-  <text x="104" y="609" font-family="'Segoe UI', Arial, sans-serif" font-size="19" fill="#0f172a">
-    Recommended default: install the Skill for workflow guidance, then keep MCP running so Codex can call CodeScan directly.
+  <rect x="72" y="584" width="1056" height="56" rx="18" fill="#0B1628" stroke="#223650" />
+  <text x="104" y="620" font-family="'Segoe UI', Arial, sans-serif" font-size="19" fill="#CFE0F2">
+    Recommended default: use the skill for review discipline, keep MCP running for structured scans, and verify high-severity findings before merge.
   </text>
 </svg>
