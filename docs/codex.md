@@ -49,6 +49,24 @@ Use $codescan-review to inspect the current branch against main and report only 
 
 Use this for branch review or pre-merge inspection.
 
+### Detailed Branch Walkthrough
+
+For a concrete walkthrough of a pre-merge scan, try a prompt like this:
+
+**Prompt:**
+> Use `scan_git_diff` to compare the current feature branch against `main`. Summarize any new security vulnerabilities introduced in this diff, focusing on high-severity issues like SQL injection or hardcoded secrets.
+
+**What to expect in the response:**
+1. **Tool Invocation:** Codex calls `scan_git_diff(base="main", head="HEAD")`.
+2. **Analysis:** CodeScan identifies changed files, runs targeted rules and AI analysis on the diff.
+3. **Structured Findings:**
+   - **Vulnerability:** Hardcoded API Key
+   - **File:** `src/services/auth.py:42`
+   - **Severity:** High
+   - **Description:** A Cloudflare API token was found hardcoded in the connection string.
+   - **Remediation:** Move the token to an environment variable or secret manager.
+4. **Conclusion:** A summary of whether the branch is "Safe to Merge" from a security perspective.
+
 ### Suspicious file review
 
 Use this when one file looks risky:
