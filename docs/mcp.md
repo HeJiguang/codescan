@@ -115,6 +115,32 @@ Without MCP, an agent usually has to:
 
 With MCP, the agent can call a tool and immediately receive structured output it can reason over.
 
+## Can MCP Make Agent-Written Code Safer?
+
+Yes, but only if it is used as part of a disciplined review loop.
+
+The practical upside is straightforward:
+
+- agents can call a structured tool instead of shelling out and parsing files
+- the lowest-friction review path becomes `scan_file` or `scan_git_diff`
+- findings come back with severity, location, remediation, and metadata the agent can act on
+
+The highest-value usage pattern is usually:
+
+1. write or modify code
+2. run `scan_git_diff` before merge, or `scan_file` on a risky file
+3. inspect `critical` and `high` issues manually before accepting them as real
+4. patch the code and re-run the scan
+
+What MCP does not magically fix:
+
+- false positives from lightweight pattern matching
+- missing deeper data-flow analysis
+- the need for human judgment on exploitability and business context
+- the absence of an enforced blocking workflow
+
+So the honest claim is: MCP can make secure review easier and more consistent for coding agents. It cannot, by itself, guarantee secure output.
+
 ## Verification
 
 Use these checks before publishing MCP changes:

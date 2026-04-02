@@ -6,8 +6,10 @@
 
 # CodeScan
 
+English | [简体中文](README.zh-CN.md)
+
 AI-assisted code security scanning for files, repositories, Git diffs, and coding agents.  
-先用规则打底，再用 LLM 做语义补强；现在还可以通过 MCP 和 Skill 直接接入 Codex。
+Start with deterministic rules, use LLM analysis to deepen context, and expose the scanner through MCP and a Codex skill.
 
 [![CI](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml/badge.svg)](https://github.com/HeJiguang/codescan/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%2B-0F172A?logo=python&logoColor=white)
@@ -190,6 +192,26 @@ Use $codescan-review to scan this repository and summarize the top security risk
 ```
 
 More setup detail is in [Use With Codex](docs/codex.md), [MCP Guide](docs/mcp.md), and [Skill Guide](docs/skill.md).
+
+## Can MCP Actually Improve Agent Security?
+
+Yes, but only in a bounded and practical sense.
+
+CodeScan can improve the safety of agent-authored code when the agent uses it at the right time and treats it as a review tool instead of a magic guarantee:
+
+- highest value: scan the current branch or diff before merge
+- strong value: scan a suspicious file that touches auth, SQL, shell execution, file handling, templating, or secrets
+- lower value: run a broad repository sweep for intake or triage
+
+What MCP changes is the integration cost. Instead of asking an agent to shell out, wait for reports, and parse result files, CodeScan can return structured findings directly in the review loop.
+
+What MCP does not solve by itself:
+
+- false positives from lightweight rule matching
+- missing deeper data-flow or framework-aware analysis
+- the need to manually verify high-severity findings before treating them as confirmed
+
+In other words: MCP makes secure review workflows easier for agents to use consistently. It does not turn any scanner into a complete security gate on its own.
 
 ## Example Output
 

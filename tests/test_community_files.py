@@ -13,6 +13,21 @@ def test_readme_highlights_adoption_and_contribution_paths() -> None:
     assert "good first issues" in readme.lower()
 
 
+def test_bilingual_readme_entrypoints_exist() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    readme_en = (repo_root / "README.md").read_text(encoding="utf-8")
+    readme_zh_path = repo_root / "README.zh-CN.md"
+    docs_index = (repo_root / "docs" / "README.md").read_text(encoding="utf-8")
+
+    assert readme_zh_path.exists(), "Chinese README should exist at the repository root"
+
+    readme_zh = readme_zh_path.read_text(encoding="utf-8")
+
+    assert "[简体中文](README.zh-CN.md)" in readme_en
+    assert "[English](README.md)" in readme_zh
+    assert "Project README (Simplified Chinese)" in docs_index
+
+
 def test_issue_templates_and_pr_template_exist() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     bug_report = repo_root / ".github" / "ISSUE_TEMPLATE" / "bug_report.yml"

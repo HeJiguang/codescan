@@ -16,6 +16,7 @@ This directory collects the main technical and contribution docs for CodeScan.
 ## User-Facing Docs
 
 - [Project README](../README.md)
+- [Project README (Simplified Chinese)](../README.zh-CN.md)
 - [MCP Guide](mcp.md)
 - [Skill Guide](skill.md)
 - [Use With Codex](codex.md)
